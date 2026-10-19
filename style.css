@@ -1,0 +1,320 @@
+/* =========================================================
+   Gruppe 6 – Lær PowerShell  |  style.css
+   Oppbygging:
+   1. Fargar og variablar (mørk og lys modus)
+   2. Grunnstil
+   3. Toppfelt, meny og framdrift
+   4. Komponentar (kort, knappar, kode)
+   5. Terminal
+   6. Quiz
+   7. Responsivt og tilgjenge
+   ========================================================= */
+
+/* ---------- 1. Fargar og variablar ---------- */
+:root,
+[data-tema="dark"] {
+    --bg: #0f1222;
+    --bg-2: #161a30;
+    --kort: #1b2040;
+    --linje: #2c3463;
+    --tekst: #e8ebff;
+    --dempa: #a4acd6;
+    --blaa: #5aa9ff;
+    --lilla: #b18cff;
+    --gron: #4ade80;
+    --raud: #ff6b81;
+    --gul: #ffd166;
+    --kodebg: #0b0e1d;
+    --skygge: rgba(0, 0, 0, 0.4);
+    --radius: 14px;
+}
+
+[data-tema="light"] {
+    --bg: #f3f5fd;
+    --bg-2: #e6eaf9;
+    --kort: #ffffff;
+    --linje: #c7cfee;
+    --tekst: #151a36;
+    --dempa: #4b5380;
+    --blaa: #0b5fcc;
+    --lilla: #6d3fd0;
+    --gron: #0f7a3a;
+    --raud: #c01c38;
+    --gul: #8a5a00;
+    --kodebg: #eef1fc;
+    --skygge: rgba(30, 40, 90, 0.15);
+}
+
+/* ---------- 2. Grunnstil ---------- */
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--tekst);
+    background:
+        radial-gradient(900px 500px at 100% -100px, rgba(177, 140, 255, 0.18), transparent 60%),
+        radial-gradient(900px 500px at 0 -120px, rgba(90, 169, 255, 0.18), transparent 60%),
+        var(--bg);
+    background-attachment: fixed;
+    min-height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+h1, h2, h3 { line-height: 1.2; margin: 0 0 8px; }
+h2 { font-size: clamp(24px, 5vw, 34px); }
+h3 { font-size: 20px; color: var(--blaa); }
+p { margin: 0 0 12px; }
+.muted { color: var(--dempa); }
+.liten { font-size: 14px; }
+.stor { font-size: 19px; }
+.berre-pc { display: inline; }
+
+.hopp {
+    position: absolute; left: -9999px; top: 8px; z-index: 100;
+    background: var(--gul); color: #000; padding: 8px 14px; border-radius: 8px;
+}
+.hopp:focus { left: 8px; }
+
+/* ---------- 3. Toppfelt, meny og framdrift ---------- */
+.topp {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--linje);
+}
+.topp-inn {
+    max-width: 1040px; margin: 0 auto; padding: 10px 16px 4px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.sidetittel {
+    font-size: clamp(28px, 6vw, 40px); margin: 0; font-weight: 800; letter-spacing: 0.5px;
+    background: linear-gradient(90deg, var(--blaa), var(--lilla));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.undertittel { color: var(--dempa); font-size: 15px; }
+.verktoy { display: flex; align-items: center; gap: 10px; }
+.badge {
+    padding: 6px 14px; border-radius: 999px; font-weight: 700;
+    background: var(--kort); border: 1px solid var(--linje);
+}
+.ikonknapp {
+    min-height: 44px; padding: 6px 14px; font: inherit; font-weight: 600; cursor: pointer;
+    color: var(--tekst); background: var(--kort); border: 1px solid var(--linje); border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 8px; transition: border-color 0.2s, transform 0.1s;
+}
+.ikonknapp:hover { border-color: var(--lilla); }
+.ikonknapp:active { transform: scale(0.96); }
+
+.meny {
+    max-width: 1040px; margin: 0 auto; padding: 6px 16px 8px;
+    display: flex; gap: 8px; flex-wrap: wrap;
+}
+.meny button {
+    flex: 1 1 150px; min-height: 46px; padding: 8px 12px; font: inherit; font-weight: 600; cursor: pointer;
+    color: var(--tekst); background: var(--bg-2); border: 2px solid var(--linje); border-radius: 10px;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+.meny button:hover { border-color: var(--blaa); transform: translateY(-1px); }
+.meny button.aktiv {
+    background: linear-gradient(90deg, var(--blaa), var(--lilla));
+    border-color: transparent; color: #0b0e1d;
+}
+
+.framdrift-rad {
+    max-width: 1040px; margin: 0 auto; padding: 2px 16px 10px;
+    display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--dempa);
+}
+.framdrift { flex: 1; height: 10px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--linje); overflow: hidden; }
+.framdrift > div {
+    height: 100%; width: 0; border-radius: 999px;
+    background: linear-gradient(90deg, var(--blaa), var(--lilla), var(--gron));
+    transition: width 0.5s ease;
+}
+
+.innhald { max-width: 1040px; margin: 0 auto; padding: 22px 16px 10px; }
+
+.visning { display: none; }
+.visning.aktiv { display: block; animation: inn 0.35s ease; }
+@keyframes inn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ---------- 4. Komponentar ---------- */
+.kort {
+    background: var(--kort); border: 1px solid var(--linje); border-radius: var(--radius);
+    padding: 20px; box-shadow: 0 6px 20px var(--skygge);
+    transition: transform 0.2s, border-color 0.2s;
+}
+.rutenett { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0; }
+.rutenett .kort:hover { transform: translateY(-4px); border-color: var(--lilla); }
+.ikon { font-size: 34px; display: block; margin-bottom: 6px; }
+
+.knapp {
+    min-height: 52px; padding: 12px 24px; font: inherit; font-weight: 700; font-size: 18px; cursor: pointer;
+    color: #0b0e1d; background: linear-gradient(90deg, var(--blaa), var(--lilla));
+    border: 2px solid transparent; border-radius: 12px;
+    transition: transform 0.1s, box-shadow 0.2s, filter 0.2s;
+}
+.knapp:hover { box-shadow: 0 0 20px rgba(130, 130, 255, 0.5); filter: brightness(1.08); }
+.knapp:active { transform: scale(0.96); }
+.knapp:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
+.knapp.sek { background: transparent; color: var(--tekst); border-color: var(--linje); }
+.knapp.sek:hover { border-color: var(--blaa); box-shadow: none; }
+.knapp.ferdig { background: var(--gron); color: #04210f; }
+.liten-knapp { min-height: 44px; padding: 8px 16px; font-size: 16px; }
+.knapperad { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+
+button:focus-visible, input:focus-visible, a:focus-visible {
+    outline: 3px solid var(--gul); outline-offset: 2px;
+}
+
+.hero {
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: center;
+    padding: 10px 0;
+}
+.hero h2 { font-size: clamp(30px, 6vw, 46px); }
+.hero-terminal, .term-boks {
+    background: var(--kodebg); border: 1px solid var(--linje); border-radius: var(--radius);
+    overflow: hidden; box-shadow: 0 10px 30px var(--skygge);
+}
+.hero-kode { margin: 0; padding: 16px; font: 15px/1.6 Consolas, "Cascadia Code", "Courier New", monospace; color: var(--tekst); white-space: pre-wrap; }
+.hero-kode .p, .term .p { color: var(--lilla); }
+.hero-kode .k { color: var(--blaa); }
+.hero-kode .s { color: var(--gul); }
+.blink { animation: blink 1s steps(2) infinite; color: var(--blaa); }
+@keyframes blink { 50% { opacity: 0; } }
+
+.vindaugsrad {
+    display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+    background: var(--bg-2); border-bottom: 1px solid var(--linje);
+}
+.prikk { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.prikk.r { background: #ff5f57; } .prikk.g { background: #febc2e; } .prikk.b { background: #28c840; }
+.vindaugsnamn { margin-left: 8px; color: var(--dempa); font-size: 13px; }
+
+.steg { margin: 8px 0 12px; padding-left: 22px; }
+.steg li { margin-bottom: 8px; }
+.kursoversikt { margin-top: 4px; }
+
+/* Nivåkort */
+.nivaaliste { display: grid; gap: 18px; margin-top: 16px; }
+.nivaa { position: relative; }
+.nivaa-topp { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.nivaa-nr {
+    width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px;
+    font-weight: 800; font-size: 20px; color: #0b0e1d;
+    background: linear-gradient(135deg, var(--blaa), var(--lilla));
+}
+.nivaa.ferdig { border-color: var(--gron); }
+.nivaa.ferdig .nivaa-nr { background: var(--gron); }
+.nivaa h3 { margin: 0; flex: 1; }
+.eks { margin: 14px 0; }
+.eks p { margin: 0 0 6px; }
+
+pre.kode {
+    margin: 0 0 6px; padding: 12px 14px; overflow-x: auto; border-radius: 10px;
+    background: var(--kodebg); border: 1px solid var(--linje);
+    font: 15px/1.55 Consolas, "Cascadia Code", "Courier New", monospace; color: var(--tekst);
+}
+.kode .t-kmd { color: var(--blaa); font-weight: 600; }
+.kode .t-par { color: var(--lilla); }
+.kode .t-str { color: var(--gul); }
+.kode .t-var { color: var(--gron); }
+.kode .t-kom { color: var(--dempa); font-style: italic; }
+
+/* ---------- 5. Terminal ---------- */
+.terminal-rutenett { display: grid; grid-template-columns: 1.7fr 1fr; gap: 16px; margin-top: 14px; align-items: start; }
+.term {
+    background: #0c0c14; color: #e6e6ee; padding: 12px 14px; min-height: 340px; max-height: 480px; overflow-y: auto;
+    font: 15px/1.5 Consolas, "Cascadia Code", "Courier New", monospace; cursor: text;
+}
+.term-ut { white-space: pre-wrap; word-break: break-word; }
+.term-ut .l { min-height: 1.5em; }
+.term-ut .fel { color: #ff7b8d; }
+.term-ut .hint { color: #ffd166; }
+.term-ut .ok { color: #5df08f; }
+.term-ut .info { color: #8fb8ff; }
+.term-ut .echo .p, .term-linje .p { color: #b18cff; }
+.term-linje { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+.term-linje .p { white-space: nowrap; font-weight: 600; }
+.term-linje input {
+    flex: 1; min-width: 60px; padding: 4px 0; font: inherit; color: #ffffff;
+    background: transparent; border: 0; outline: none; caret-color: #5aa9ff;
+}
+.term-linje:focus-within { outline: 2px solid rgba(90, 169, 255, 0.35); outline-offset: 4px; border-radius: 4px; }
+.term-knappar { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-top: 1px solid var(--linje); background: var(--bg-2); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+    min-height: 40px; padding: 4px 14px; font: 14px Consolas, "Courier New", monospace; cursor: pointer;
+    color: var(--tekst); background: var(--kort); border: 1px solid var(--lilla); border-radius: 999px;
+    transition: background 0.2s;
+}
+.chip:hover { background: rgba(177, 140, 255, 0.2); }
+
+.oppgaver { padding: 16px; }
+.oppgliste { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+.oppg {
+    padding: 12px; border-radius: 12px; background: var(--bg-2); border: 2px solid var(--linje);
+    transition: border-color 0.3s, background 0.3s;
+}
+.oppg.aktiv { border-color: var(--blaa); }
+.oppg.ferdig { border-color: var(--gron); background: rgba(74, 222, 128, 0.1); }
+.oppg-topp { display: flex; gap: 10px; align-items: flex-start; }
+.oppg-ikon { font-size: 22px; line-height: 1.2; }
+.oppg-poeng { font-size: 13px; color: var(--dempa); }
+.oppg button.hint-knapp {
+    margin-top: 8px; min-height: 40px; padding: 4px 14px; font: inherit; font-size: 14px; cursor: pointer;
+    color: var(--tekst); background: transparent; border: 1px solid var(--linje); border-radius: 8px;
+}
+.oppg button.hint-knapp:hover { border-color: var(--gul); }
+.oppg .hint-tekst { margin-top: 8px; padding: 8px 10px; border-left: 4px solid var(--gul); background: rgba(255, 209, 102, 0.12); border-radius: 6px; font-size: 15px; }
+
+/* ---------- 6. Quiz ---------- */
+.quiz-topp { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: var(--dempa); font-weight: 700; margin-bottom: 8px; }
+.quiz-spm { font-size: 22px; font-weight: 700; margin: 14px 0; }
+.svaralt { display: grid; gap: 10px; }
+.svaralt button {
+    min-height: 54px; padding: 12px 16px; font: inherit; text-align: left; cursor: pointer;
+    color: var(--tekst); background: var(--bg-2); border: 2px solid var(--linje); border-radius: 12px;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.svaralt button:hover:not(:disabled) { border-color: var(--blaa); transform: translateX(3px); }
+.svaralt button:disabled { cursor: default; }
+.svaralt button.rett { background: rgba(74, 222, 128, 0.18); border-color: var(--gron); }
+.svaralt button.feil { background: rgba(255, 107, 129, 0.18); border-color: var(--raud); }
+.quiz-fb { margin-top: 14px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--linje); background: var(--bg-2); min-height: 3.4em; }
+.quiz-fb.ok { border-color: var(--gron); }
+.quiz-fb.nei { border-color: var(--raud); }
+.quiz-slutt { text-align: center; }
+.quiz-slutt .tal { font-size: clamp(48px, 14vw, 80px); font-weight: 800; line-height: 1.1;
+    background: linear-gradient(90deg, var(--blaa), var(--lilla)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.bunn { max-width: 1040px; margin: 20px auto 0; padding: 20px 16px 40px; text-align: center; color: var(--dempa); font-size: 14px; border-top: 1px solid var(--linje); }
+.bunn a { color: var(--blaa); }
+
+.toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 30px); opacity: 0; pointer-events: none;
+    padding: 12px 22px; border-radius: 999px; font-weight: 700; z-index: 50;
+    background: var(--gron); color: #04210f; box-shadow: 0 8px 24px var(--skygge);
+    transition: opacity 0.3s, transform 0.3s;
+}
+.toast.vis { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- 7. Responsivt og tilgjenge ---------- */
+@media (max-width: 860px) {
+    .hero, .terminal-rutenett { grid-template-columns: 1fr; }
+    .rutenett { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+    body { font-size: 16px; }
+    .berre-pc { display: none; }
+    .meny button { flex: 1 1 calc(50% - 8px); }
+    .knapp { width: 100%; }
+    .term { font-size: 14px; min-height: 300px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition-duration: 0.01s !important; }
+}

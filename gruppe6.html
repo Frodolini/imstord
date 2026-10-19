@@ -1,63 +1,165 @@
 <!DOCTYPE html>
-<html lang="nn">
+<!--
+    Gruppe 6 – Lær PowerShell
+    Struktur:
+      gruppe6.html : innhald og struktur (denne fila)
+      style.css    : design, fargar, animasjonar og responsivt oppsett
+      script.js    : terminalen, quizen, poeng og framdrift (lagra i localStorage)
+-->
+<html lang="nn" data-tema="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gruppe 6: PowerShell</title>
-    <style>
-        body {
-            background-color: powderblue;
-            font-family: Arial, sans-serif;
-            color: #333;
-            margin: 0;
-            padding: 20px 16px;
-        }
-        .container {
-            max-width: 640px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px 24px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            margin: 0 0 4px;
-        }
-        .intro {
-            color: #666;
-            margin: 0 0 20px;
-        }
-        h2 {
-            font-size: 18px;
-            margin: 20px 0 8px;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #ddd;
-        }
-        a {
-            color: #0066cc;
-        }
-        footer {
-            margin-top: 24px;
-            font-size: 13px;
-            color: #888;
-        }
-        .snart {
-            font-size: 40px;
-            text-align: center;
-            margin: 24px 0 8px;
-        }
-        .center {
-            text-align: center;
-        }
-    </style>
+    <meta name="theme-color" content="#0f1222">
+    <title>Gruppe 6 – Lær PowerShell</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <h1>Gruppe 6</h1>
-    <p class="intro">Tema: PowerShell</p>
-    <p class="snart" aria-hidden="true">⏳</p>
-    <p class="center">Kjem snart! Gruppa er i gang med å prompta fram sida.</p>
-    <footer><a href="index.html">← Tilbake til VM i PROMPTING26</a></footer>
-</div>
+
+<a class="hopp" href="#hovud">Hopp til innhald</a>
+
+<!-- ============ TOPPFELT ============ -->
+<header class="topp">
+    <div class="topp-inn">
+        <div class="tittel-blokk">
+            <h1 class="sidetittel">Gruppe 6</h1>
+            <span class="undertittel">Lær PowerShell</span>
+        </div>
+
+        <div class="verktoy">
+            <div class="badge" title="Poengsum"><span aria-hidden="true">⭐</span> <span id="poengVis">0</span> poeng</div>
+            <button type="button" id="temaKnapp" class="ikonknapp" aria-pressed="false" aria-label="Byt mellom lys og mørk modus">
+                <span id="temaIkon" aria-hidden="true">🌙</span><span class="berre-pc" id="temaTekst">Mørk</span>
+            </button>
+        </div>
+    </div>
+
+    <nav class="meny" aria-label="Hovudmeny">
+        <button type="button" data-visning="heim" class="aktiv">🏠 Heim</button>
+        <button type="button" data-visning="laer">📚 Lær PowerShell</button>
+        <button type="button" data-visning="terminal">⌨️ Terminal og oppgåver</button>
+        <button type="button" data-visning="quiz">🏆 Quiz</button>
+    </nav>
+
+    <div class="framdrift-rad" aria-live="polite">
+        <div class="framdrift" role="progressbar" aria-label="Framdrift i kurset" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="framdriftRot"><div id="framdriftBar"></div></div>
+        <span id="framdriftTekst">0 % fullført</span>
+    </div>
+</header>
+
+<main id="hovud" class="innhald">
+
+    <!-- ============ HEIM ============ -->
+    <section id="heim" class="visning aktiv" aria-labelledby="heimTittel">
+        <div class="hero">
+            <div class="hero-terminal" aria-hidden="true">
+                <div class="vindaugsrad"><span class="prikk r"></span><span class="prikk g"></span><span class="prikk b"></span><span class="vindaugsnamn">PowerShell</span></div>
+                <pre class="hero-kode"><span class="p">PS C:\Brukarar\Elev&gt;</span> <span class="k">Write-Host</span> <span class="s">"Hei, verda!"</span>
+Hei, verda!
+<span class="p">PS C:\Brukarar\Elev&gt;</span> <span class="k">Get-Date</span>
+<span class="blink">▌</span></pre>
+            </div>
+            <div class="hero-tekst">
+                <h2 id="heimTittel">Snakk med datamaskina!</h2>
+                <p class="stor">PowerShell er eit program der du <strong>skriv kommandoar</strong> i staden for å klikke med musa. Du seier kva datamaskina skal gjere, og ho gjer det.</p>
+                <div class="knapperad">
+                    <button type="button" class="knapp" data-gaa="laer">▶ Start kurset</button>
+                    <button type="button" class="knapp sek" data-gaa="terminal">⌨️ Prøv terminalen</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="rutenett">
+            <article class="kort">
+                <span class="ikon" aria-hidden="true">💡</span>
+                <h3>Kva er PowerShell?</h3>
+                <p>Eit verktøy frå Microsoft som styrer Windows med tekst. Det er også eit <strong>skriptspråk</strong>: du kan skrive fleire kommandoar i ei fil og køyre dei på nytt kva gong du vil.</p>
+            </article>
+            <article class="kort">
+                <span class="ikon" aria-hidden="true">🛠️</span>
+                <h3>Kva brukar ein det til?</h3>
+                <p>Å finne filer, lage mapper, sjå kva som køyrer på maskina, og å gjere kjedelege oppgåver automatisk. IT-folk brukar det kvar dag for å styre mange maskinar samtidig.</p>
+            </article>
+            <article class="kort">
+                <span class="ikon" aria-hidden="true">🚀</span>
+                <h3>Kvifor lære det?</h3>
+                <p>Du lærer å tenke som ein programmerar, og du blir raskare på datamaskina. Det er ein flott start om du vil jobbe med IT.</p>
+            </article>
+        </div>
+
+        <div class="kort kursoversikt">
+            <h3>Slik fungerer kurset</h3>
+            <ol class="steg">
+                <li><strong>Les</strong> dei 5 nivåa under «Lær PowerShell». <span class="muted">(+10 poeng per nivå)</span></li>
+                <li><strong>Øv</strong> i den simulerte terminalen og løys 5 oppgåver. <span class="muted">(+20 poeng per oppgåve)</span></li>
+                <li><strong>Test deg</strong> i quizen med 11 spørsmål. <span class="muted">(+10 poeng per rette svar)</span></li>
+            </ol>
+            <p class="muted">Framgangen din blir lagra i nettlesaren, så han er der når du kjem tilbake.</p>
+        </div>
+    </section>
+
+    <!-- ============ LÆR ============ -->
+    <section id="laer" class="visning" aria-labelledby="laerTittel">
+        <h2 id="laerTittel">📚 Lær PowerShell</h2>
+        <p class="muted">Fem nivå. Trykk «Prøv i terminalen» for å teste ei kommando sjølv, og «Marker som fullført» når du er ferdig med nivået.</p>
+        <div id="nivaaListe" class="nivaaliste"></div>
+    </section>
+
+    <!-- ============ TERMINAL OG OPPGÅVER ============ -->
+    <section id="terminal" class="visning" aria-labelledby="termTittel">
+        <h2 id="termTittel">⌨️ Terminal og oppgåver</h2>
+        <p class="muted">Dette er ein <strong>simulert</strong> terminal. Han køyrer ikkje ekte kommandoar og kan ikkje øydelegge noko på maskina di. Trykk ↑ og ↓ for å bruke tidlegare kommandoar.</p>
+
+        <div class="terminal-rutenett">
+            <div class="term-boks">
+                <div class="vindaugsrad">
+                    <span class="prikk r"></span><span class="prikk g"></span><span class="prikk b"></span>
+                    <span class="vindaugsnamn">Windows PowerShell (simulert)</span>
+                </div>
+                <div class="term" id="term" aria-label="PowerShell-terminal">
+                    <div class="term-ut" id="termUt" role="log" aria-live="polite"></div>
+                    <form class="term-linje" id="termSkjema" autocomplete="off">
+                        <label for="termInn" class="p" id="termPrompt">PS C:\Brukarar\Elev&gt;</label>
+                        <input type="text" id="termInn" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-describedby="termTips">
+                    </form>
+                </div>
+                <div class="term-knappar">
+                    <span id="termTips" class="muted liten">Skriv ei kommando og trykk Enter.</span>
+                    <div class="chips" aria-label="Døme på kommandoar">
+                        <button type="button" class="chip" data-kmd="Get-Date">Get-Date</button>
+                        <button type="button" class="chip" data-kmd="Get-Location">Get-Location</button>
+                        <button type="button" class="chip" data-kmd="Get-ChildItem">Get-ChildItem</button>
+                        <button type="button" class="chip" data-kmd="Get-Help">Get-Help</button>
+                        <button type="button" class="chip" data-kmd="Get-Command">Get-Command</button>
+                    </div>
+                    <button type="button" class="knapp sek liten-knapp" id="termNull">↺ Nullstill terminalen</button>
+                </div>
+            </div>
+
+            <aside class="kort oppgaver" aria-labelledby="oppgTittel">
+                <h3 id="oppgTittel">🎯 Oppgåver</h3>
+                <p class="muted liten">Løys oppgåvene i terminalen. Du får poeng for kvar!</p>
+                <ol id="oppgListe" class="oppgliste"></ol>
+            </aside>
+        </div>
+    </section>
+
+    <!-- ============ QUIZ ============ -->
+    <section id="quiz" class="visning" aria-labelledby="quizTittel">
+        <h2 id="quizTittel">🏆 Quiz</h2>
+        <div class="kort" id="quizKort"></div>
+    </section>
+
+</main>
+
+<footer class="bunn">
+    <button type="button" class="knapp sek liten-knapp" id="nullAlt">🗑️ Nullstill all framgang</button>
+    <p><a href="index.html">← Tilbake til VM i PROMPTING26</a></p>
+</footer>
+
+<!-- Meldingar om poeng (blir viste kort) -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
 </body>
 </html>
