@@ -3,61 +3,638 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gruppe 3: 2FA</title>
+    <meta name="theme-color" content="#070b14">
+    <title>Gruppe 3: 2FA og passordtryggleik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
+        :root {
+            --cyan: #22d3ee;
+            --green: #34d399;
+            --purple: #a78bfa;
+            --red: #f87171;
+            --yellow: #fbbf24;
+        }
         body {
-            background-color: powderblue;
-            font-family: Arial, sans-serif;
-            color: #333;
-            margin: 0;
-            padding: 20px 16px;
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+            background:
+                radial-gradient(800px 500px at 90% -100px, rgba(167, 139, 250, 0.25), transparent 60%),
+                radial-gradient(900px 520px at 0% -120px, rgba(34, 211, 238, 0.2), transparent 60%),
+                radial-gradient(700px 500px at 50% 110%, rgba(52, 211, 153, 0.12), transparent 60%),
+                #070b14;
+            background-attachment: fixed;
         }
-        .container {
-            max-width: 640px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px 24px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
         }
-        h1 {
-            margin: 0 0 4px;
+        .neon-text {
+            background: linear-gradient(90deg, var(--cyan), var(--purple), var(--green));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
         }
-        .intro {
-            color: #666;
-            margin: 0 0 20px;
+        .mono { font-family: Consolas, "Courier New", monospace; }
+        .inp {
+            width: 100%; min-height: 50px; padding: 10px 14px; border-radius: 12px; color: #e8eefc;
+            background: rgba(5, 10, 20, 0.7); border: 2px solid rgba(255, 255, 255, 0.15); font-size: 17px;
         }
-        h2 {
-            font-size: 18px;
-            margin: 20px 0 8px;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #ddd;
+        .inp:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.25); }
+        .btn {
+            min-height: 50px; padding: 10px 22px; border-radius: 12px; font-weight: 700; cursor: pointer;
+            color: #04121c; background: linear-gradient(90deg, var(--cyan), #60a5fa);
+            transition: transform 0.1s, box-shadow 0.2s, opacity 0.2s;
         }
-        a {
-            color: #0066cc;
+        .btn:hover { box-shadow: 0 0 22px rgba(34, 211, 238, 0.5); }
+        .btn:active { transform: scale(0.97); }
+        .btn.sek { color: #e8eefc; background: transparent; border: 2px solid rgba(255, 255, 255, 0.2); }
+        .btn.sek:hover { border-color: var(--cyan); box-shadow: none; }
+        button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+
+        /* Styrke */
+        .styrkebar { height: 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+        .styrkebar > div { height: 100%; width: 0; border-radius: 999px; transition: width 0.35s, background 0.35s; }
+        .krav { display: inline-flex; align-items: center; gap: 6px; padding: 3px 12px; border-radius: 999px; font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15); color: #94a3b8; transition: all 0.25s; }
+        .krav.ok { color: var(--green); border-color: var(--green); background: rgba(52, 211, 153, 0.1); }
+
+        /* Telefon */
+        .telefon {
+            width: 270px; max-width: 100%; margin: 0 auto; padding: 14px; border-radius: 38px;
+            background: linear-gradient(160deg, #1b2438, #0b1220); border: 3px solid #2b3856;
+            box-shadow: 0 0 40px rgba(34, 211, 238, 0.18), inset 0 0 20px rgba(0, 0, 0, 0.6);
         }
-        footer {
-            margin-top: 24px;
-            font-size: 13px;
-            color: #888;
-        }
-        .snart {
-            font-size: 40px;
-            text-align: center;
-            margin: 24px 0 8px;
-        }
-        .center {
-            text-align: center;
-        }
+        .skjerm { border-radius: 26px; background: #060a14; padding: 18px 16px 22px; min-height: 430px; position: relative; overflow: hidden; }
+        .notch { width: 90px; height: 20px; border-radius: 0 0 14px 14px; background: #0b1220; margin: -18px auto 14px; }
+        .kode { font-size: 40px; font-weight: 800; letter-spacing: 4px; color: var(--green); text-shadow: 0 0 16px rgba(52, 211, 153, 0.6); }
+        .kode.blink { animation: blink 0.6s; }
+        @keyframes blink { 0% { opacity: 0.2; transform: scale(0.95); } 100% { opacity: 1; transform: none; } }
+        .nedtelling { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+        .nedtelling > div { height: 100%; width: 100%; border-radius: 999px; background: var(--green); transition: width 0.25s linear, background 0.3s; }
+
+        /* Risting og animasjon */
+        .rist { animation: rist 0.45s; }
+        @keyframes rist { 0%, 100% { transform: none; } 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-8px); } 80% { transform: translateX(8px); } }
+        .inn { animation: inn 0.35s ease; }
+        @keyframes inn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+        /* Faktorkort */
+        .faktor { text-align: left; width: 100%; cursor: pointer; transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s; }
+        .faktor:hover { transform: translateY(-3px); border-color: var(--cyan); }
+        .faktor[aria-expanded="true"] { border-color: var(--green); box-shadow: 0 0 30px rgba(52, 211, 153, 0.25); }
+        .faktor .meir { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, margin 0.3s; }
+        .faktor[aria-expanded="true"] .meir { max-height: 420px; margin-top: 14px; }
+        .faktor .pil { transition: transform 0.3s; }
+        .faktor[aria-expanded="true"] .pil { transform: rotate(180deg); }
+
+        /* Quiz */
+        .alt { width: 100%; text-align: left; min-height: 54px; padding: 12px 16px; border-radius: 12px; cursor: pointer; color: #e8eefc;
+            background: rgba(5, 10, 20, 0.6); border: 2px solid rgba(255, 255, 255, 0.15); transition: border-color 0.15s, background 0.15s; }
+        .alt:hover:not(:disabled) { border-color: var(--cyan); }
+        .alt:disabled { cursor: default; }
+        .alt.rett { background: rgba(52, 211, 153, 0.2); border-color: var(--green); }
+        .alt.feil { background: rgba(248, 113, 113, 0.2); border-color: var(--red); }
+
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition-duration: 0.01s !important; } }
     </style>
 </head>
-<body>
-<div class="container">
-    <h1>Gruppe 3</h1>
-    <p class="intro">Tema: 2FA</p>
-    <p class="snart" aria-hidden="true">⏳</p>
-    <p class="center">Kjem snart! Gruppa er i gang med å prompta fram sida.</p>
-    <footer><a href="index.html">← Tilbake til VM i PROMPTING26</a></footer>
+<body class="text-slate-100 leading-relaxed">
+
+<div class="max-w-6xl mx-auto px-4 pb-16">
+
+    <!-- HEADER -->
+    <header class="flex flex-wrap items-center justify-between gap-3 py-5">
+        <div class="font-extrabold tracking-wide text-lg"><i class="fa-solid fa-shield-halved text-cyan-400"></i> Cyber<span class="text-cyan-400">Vakt</span> · Gruppe 3</div>
+        <nav class="flex flex-wrap gap-4 text-sm text-slate-400" aria-label="Snarvegar">
+            <a class="hover:text-cyan-400" href="#passord">Passordtest</a>
+            <a class="hover:text-cyan-400" href="#simulator">2FA-simulator</a>
+            <a class="hover:text-cyan-400" href="#faktorar">Faktorar</a>
+            <a class="hover:text-cyan-400" href="#quiz">Quiz</a>
+        </nav>
+    </header>
+
+    <!-- HERO -->
+    <section class="text-center py-10">
+        <span class="inline-block px-4 py-1 rounded-full text-sm border border-cyan-400/40 bg-cyan-400/10 text-cyan-300"><i class="fa-solid fa-lock"></i> To-faktor-autentisering (2FA)</span>
+        <h1 class="mt-4 text-4xl sm:text-6xl font-extrabold leading-tight">Passordet ditt er <span class="neon-text">ikkje nok</span></h1>
+        <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-300">Passord kan gjettast, lekkast eller bli stolne i datainnbrot. Har ein kriminell passordet ditt, kjem han rett inn. Med <strong class="text-green-400">to-faktor-autentisering</strong> må han også ha mobilen din. Det stoppar dei fleste angrep.</p>
+        <div class="mt-7 flex flex-wrap justify-center gap-3">
+            <a href="#passord" class="btn inline-flex items-center gap-2"><i class="fa-solid fa-key"></i> Test passordet ditt</a>
+            <a href="#simulator" class="btn sek inline-flex items-center gap-2"><i class="fa-solid fa-mobile-screen"></i> Prøv 2FA</a>
+        </div>
+    </section>
+
+    <!-- PASSORDSTYRKE -->
+    <section id="passord" class="mt-10 scroll-mt-4">
+        <h2 class="text-3xl font-bold mb-1"><i class="fa-solid fa-key text-cyan-400"></i> Passordtest og «tid til hacking»</h2>
+        <p class="text-slate-400 mb-5">Skriv eit passord og sjå kor lang tid det tek å knekke det. Passordet blir ikkje sendt nokon stad. Alt skjer i nettlesaren din.</p>
+
+        <div class="grid lg:grid-cols-5 gap-5">
+            <div class="glass p-6 lg:col-span-3">
+                <label for="pwInn" class="block font-semibold mb-2">Skriv eit passord for å teste</label>
+                <div class="flex gap-2">
+                    <input id="pwInn" class="inp mono" type="password" autocomplete="off" spellcheck="false" placeholder="Skriv her …" maxlength="100">
+                    <button type="button" id="pwVis" class="btn sek" aria-label="Vis eller skjul passord"><i class="fa-solid fa-eye"></i></button>
+                </div>
+
+                <div class="mt-5 flex justify-between items-baseline">
+                    <span class="font-semibold">Styrke: <span id="pwNamn" class="font-bold">–</span></span>
+                    <span class="text-sm text-slate-400" id="pwLengd">0 teikn</span>
+                </div>
+                <div class="styrkebar mt-2" role="progressbar" aria-label="Passordstyrke" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="pwBarRot"><div id="pwBar"></div></div>
+
+                <div class="mt-4 flex flex-wrap gap-2" id="pwKrav">
+                    <span class="krav" data-k="lengd"><i class="fa-solid fa-circle"></i> 12+ teikn</span>
+                    <span class="krav" data-k="liten"><i class="fa-solid fa-circle"></i> Små bokstavar</span>
+                    <span class="krav" data-k="stor"><i class="fa-solid fa-circle"></i> Store bokstavar</span>
+                    <span class="krav" data-k="tal"><i class="fa-solid fa-circle"></i> Tal</span>
+                    <span class="krav" data-k="spesial"><i class="fa-solid fa-circle"></i> Spesialteikn</span>
+                </div>
+
+                <div class="mt-5 rounded-xl p-4 border border-white/10 bg-black/30" aria-live="polite">
+                    <div class="text-sm uppercase tracking-widest text-slate-400">Tid det tek å knekke</div>
+                    <div class="text-2xl sm:text-3xl font-extrabold mono" id="pwTid">–</div>
+                    <div class="text-xs text-slate-500 mt-1">Rekna ut med ei datamaskin som prøver 10 milliardar passord i sekundet mot ei stolen passordliste. Berre eit anslag.</div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 flex flex-col gap-5">
+                <div class="glass p-6">
+                    <h3 class="font-bold text-lg mb-2"><i class="fa-solid fa-lightbulb text-yellow-400"></i> Tips til passordet ditt</h3>
+                    <ul id="pwTips" class="space-y-2 text-slate-200" aria-live="polite"><li>Skriv eit passord for å få tips.</li></ul>
+                </div>
+                <div class="glass p-6 border-purple-400/40" style="border-color: rgba(167,139,250,.5)">
+                    <h3 class="font-bold text-lg mb-2 text-purple-300"><i class="fa-solid fa-triangle-exclamation"></i> Viktig å vite</h3>
+                    <p>Sjølv eit perfekt passord kan lekke i eit datainnbrot – <strong>det er derfor du MÅ ha 2FA!</strong></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2FA SIMULATOR -->
+    <section id="simulator" class="mt-16 scroll-mt-4">
+        <h2 class="text-3xl font-bold mb-1"><i class="fa-solid fa-mobile-screen text-green-400"></i> 2FA-simulator</h2>
+        <p class="text-slate-400 mb-5">Logg inn på den falske banken «SikkerBank». Du treng både passordet og koden frå mobilen. Koden byter kvart 30. sekund.</p>
+
+        <div class="grid md:grid-cols-2 gap-6 items-start">
+            <!-- Telefon -->
+            <div class="telefon" aria-label="Simulert mobil med Authenticator-app">
+                <div class="skjerm">
+                    <div class="notch"></div>
+                    <div class="flex items-center gap-2 text-sm text-slate-400"><i class="fa-solid fa-shield-halved text-cyan-400"></i> Authenticator</div>
+                    <div class="mt-6 p-4 rounded-2xl border border-white/10 bg-white/5">
+                        <div class="text-xs text-slate-400">SikkerBank</div>
+                        <div class="text-sm font-semibold">elev@sikkerbank.no</div>
+                        <div class="kode mono mt-3 text-center" id="telKode" aria-label="Gjeldande engangskode">000 000</div>
+                        <div class="nedtelling mt-3"><div id="telBar"></div></div>
+                        <div class="mt-2 text-xs text-slate-400 flex justify-between"><span>Ny kode om</span><span id="telSek" class="mono">30 s</span></div>
+                    </div>
+                    <div class="mt-5 text-xs text-slate-500 text-center">Kvar kode gjeld berre éin gong og i kort tid.</div>
+                </div>
+            </div>
+
+            <!-- Innlogging -->
+            <div class="glass p-6" id="loggKort">
+                <div id="steg1" class="inn">
+                    <h3 class="text-xl font-bold mb-1">Logg inn</h3>
+                    <p class="text-sm text-slate-400 mb-4">Demo-brukar: <span class="mono text-cyan-300">elev</span> · passord: <span class="mono text-cyan-300">Sikker!2FA</span></p>
+                    <form id="form1" autocomplete="off" novalidate>
+                        <label for="brukar" class="block text-sm font-semibold mb-1">Brukarnamn</label>
+                        <input id="brukar" class="inp mb-3" type="text" autocapitalize="off" spellcheck="false" placeholder="elev">
+                        <label for="pass" class="block text-sm font-semibold mb-1">Passord</label>
+                        <input id="pass" class="inp mb-4" type="password" placeholder="••••••••••">
+                        <button type="submit" class="btn w-full"><i class="fa-solid fa-arrow-right-to-bracket"></i> Fortset</button>
+                    </form>
+                </div>
+
+                <div id="steg2" class="hidden">
+                    <h3 class="text-xl font-bold mb-1">Stadfest med mobilen</h3>
+                    <p class="text-sm text-slate-400 mb-4">Passordet var rett. Skriv inn den 6-sifra koden frå Authenticator-appen.</p>
+                    <form id="form2" autocomplete="off" novalidate>
+                        <label for="kodeInn" class="block text-sm font-semibold mb-1">Engangskode</label>
+                        <input id="kodeInn" class="inp mono mb-4 text-center text-2xl tracking-widest" type="text" inputmode="numeric" maxlength="7" placeholder="000 000">
+                        <button type="submit" class="btn w-full"><i class="fa-solid fa-check"></i> Stadfest</button>
+                    </form>
+                    <button type="button" id="tilbakeSteg1" class="btn sek w-full mt-3">← Tilbake</button>
+                </div>
+
+                <div id="steg3" class="hidden text-center">
+                    <div class="text-6xl text-green-400"><i class="fa-solid fa-circle-check"></i></div>
+                    <h3 class="text-2xl font-bold mt-2">Velkomen, elev!</h3>
+                    <p class="text-slate-300 mt-1">Du er logga inn trygt med to faktorar: noko du <em>veit</em> og noko du <em>har</em>.</p>
+                    <button type="button" id="loggUt" class="btn mt-4">↺ Logg ut og prøv igjen</button>
+                </div>
+
+                <div id="loggMelding" class="mt-4 min-h-[1.5rem] font-semibold" role="alert" aria-live="assertive"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAKTORAR -->
+    <section id="faktorar" class="mt-16 scroll-mt-4">
+        <h2 class="text-3xl font-bold mb-1"><i class="fa-solid fa-layer-group text-purple-400"></i> Dei tre faktorane</h2>
+        <p class="text-slate-400 mb-5">Trykk på eit kort for å lese meir. 2FA betyr at du brukar <strong>minst to</strong> ulike typar.</p>
+        <div class="grid md:grid-cols-3 gap-5 items-start">
+            <button type="button" class="glass faktor p-6" aria-expanded="false" aria-controls="f1">
+                <div class="flex justify-between items-start">
+                    <div><i class="fa-solid fa-brain text-4xl text-cyan-400"></i><h3 class="text-xl font-bold mt-3">Noko du veit</h3><p class="text-slate-400 text-sm">Passord, PIN</p></div>
+                    <i class="fa-solid fa-chevron-down pil text-slate-400"></i>
+                </div>
+                <div class="meir" id="f1"><p>Noko som berre du skal vite, og som du hugsar. Det er den vanlegaste faktoren.</p>
+                    <ul class="list-disc pl-5 mt-2 text-slate-300"><li>Passord eller passfrase</li><li>PIN-kode til bankkortet</li><li>Svar på tryggleiksspørsmål</li></ul>
+                    <p class="mt-2 text-sm text-red-300">Svakheit: Kan gjettast, tjuvkikkast eller lekkast.</p></div>
+            </button>
+            <button type="button" class="glass faktor p-6" aria-expanded="false" aria-controls="f2">
+                <div class="flex justify-between items-start">
+                    <div><i class="fa-solid fa-key text-4xl text-green-400"></i><h3 class="text-xl font-bold mt-3">Noko du har</h3><p class="text-slate-400 text-sm">Mobil, YubiKey</p></div>
+                    <i class="fa-solid fa-chevron-down pil text-slate-400"></i>
+                </div>
+                <div class="meir" id="f2"><p>Ein fysisk ting som berre du har med deg.</p>
+                    <ul class="list-disc pl-5 mt-2 text-slate-300"><li>Mobil med Authenticator-app</li><li>Tryggingsnøkkel som YubiKey</li><li>Bankkort eller BankID-kodebrikke</li></ul>
+                    <p class="mt-2 text-sm text-red-300">Svakheit: Kan mistast eller bli stolen.</p></div>
+            </button>
+            <button type="button" class="glass faktor p-6" aria-expanded="false" aria-controls="f3">
+                <div class="flex justify-between items-start">
+                    <div><i class="fa-solid fa-fingerprint text-4xl text-purple-400"></i><h3 class="text-xl font-bold mt-3">Noko du er</h3><p class="text-slate-400 text-sm">Fingeravtrykk, FaceID</p></div>
+                    <i class="fa-solid fa-chevron-down pil text-slate-400"></i>
+                </div>
+                <div class="meir" id="f3"><p>Noko som er ein del av kroppen din, kalla biometri.</p>
+                    <ul class="list-disc pl-5 mt-2 text-slate-300"><li>Fingeravtrykk</li><li>Ansiktsgjenkjenning (FaceID)</li><li>Irisskanning</li></ul>
+                    <p class="mt-2 text-sm text-red-300">Svakheit: Du kan ikkje byte det om det lekkar.</p></div>
+            </button>
+        </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="quiz" class="mt-16 scroll-mt-4">
+        <h2 class="text-3xl font-bold mb-1"><i class="fa-solid fa-trophy text-yellow-400"></i> Mini-quiz</h2>
+        <p class="text-slate-400 mb-5">Tre spørsmål om 2FA. Du får svar med ein gong.</p>
+        <div class="glass p-6 max-w-3xl" id="quizKort"></div>
+    </section>
+
+    <footer class="mt-16 pt-6 border-t border-white/10 text-center text-sm text-slate-400">
+        <a class="text-cyan-400 hover:underline" href="index.html">← Tilbake til VM i PROMPTING26</a>
+    </footer>
 </div>
+
+<script>
+(function () {
+    "use strict";
+    var $ = function (id) { return document.getElementById(id); };
+    function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) { e.className = cls; } if (txt !== undefined) { e.textContent = txt; } return e; }
+    function stokk(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+    function konfetti(opts) { if (typeof window.confetti === "function") { window.confetti(opts); } }
+
+    /* =====================================================
+       1. Passordstyrke og tid til hacking
+       ===================================================== */
+    var VANLEGE = ["123456", "password", "passord", "qwerty", "12345678", "123456789", "abc123", "111111", "letmein", "admin",
+        "welcome", "iloveyou", "monkey", "dragon", "123123", "qwerty123", "norge", "sommer", "vinter", "fotball", "bergen", "oslo",
+        "1234", "12345", "000000", "passord1", "test", "hemmeleg", "hemmelig", "minecraft", "snusmumrik"];
+    var GJETNINGAR_PER_SEK = 1e10;
+    var AAR = 31536000;
+
+    function mangd(n, eintal, fleirtal) { return n + " " + (n === 1 ? eintal : fleirtal); }
+
+    function formaterTid(s) {
+        if (s < 0.001) { return "mindre enn 1 millisekund"; }
+        if (s < 1) { return mangd(Math.round(s * 1000), "millisekund", "millisekund"); }
+        if (s < 60) { return mangd(Math.round(s), "sekund", "sekund"); }
+        if (s < 3600) { return mangd(Math.round(s / 60), "minutt", "minutt"); }
+        if (s < 86400) { return mangd(Math.round(s / 3600), "time", "timar"); }
+        if (s < AAR) { return mangd(Math.round(s / 86400), "dag", "dagar"); }
+        var y = s / AAR;
+        if (y < 1000) { return mangd(Math.round(y), "år", "år"); }
+        if (y < 1e6) { return Math.round(y / 1000).toLocaleString("nn-NO") + " tusen år"; }
+        if (y < 1e9) { var m = Math.round(y / 1e6); return m.toLocaleString("nn-NO") + (m === 1 ? " million år" : " millionar år"); }
+        if (y < 1e12) { var mi = Math.round(y / 1e9); return mi.toLocaleString("nn-NO") + (mi === 1 ? " milliard år" : " milliardar år"); }
+        return "meir enn 1 billion år";
+    }
+
+    function harSekvens(p) {
+        var l = p.toLowerCase();
+        for (var i = 0; i < l.length - 2; i++) {
+            var a = l.charCodeAt(i), b = l.charCodeAt(i + 1), c = l.charCodeAt(i + 2);
+            if ((b === a + 1 && c === b + 1) || (b === a - 1 && c === b - 1)) { return true; }
+        }
+        return false;
+    }
+
+    function erVanleg(p) {
+        var l = p.toLowerCase();
+        if (VANLEGE.indexOf(l) !== -1) { return true; }
+        var kjerne = l.replace(/[^a-zæøå]+$/g, "").replace(/^[^a-zæøå]+/g, "");
+        return kjerne.length >= 4 && VANLEGE.indexOf(kjerne) !== -1;
+    }
+
+    function analyser(p) {
+        var a = {
+            lengd: p.length,
+            liten: /[a-zæøå]/.test(p),
+            stor: /[A-ZÆØÅ]/.test(p),
+            tal: /[0-9]/.test(p),
+            spesial: /[^A-Za-zÆØÅæøå0-9]/.test(p),
+            lang: p.length >= 12,
+            vanleg: erVanleg(p),
+            gjentak: /(.)\1{2,}/.test(p),
+            sekvens: harSekvens(p)
+        };
+        var pool = 0;
+        if (a.liten) { pool += 29; }
+        if (a.stor) { pool += 29; }
+        if (a.tal) { pool += 10; }
+        if (a.spesial) { pool += 33; }
+        var entropi = p.length === 0 || pool === 0 ? 0 : p.length * Math.log2(pool);
+        if (a.gjentak) { entropi *= 0.8; }
+        if (a.sekvens) { entropi *= 0.85; }
+        if (a.vanleg) { entropi = Math.min(entropi, 10); }
+        a.entropi = entropi;
+        a.sekund = entropi === 0 ? 0 : Math.pow(2, entropi - 1) / GJETNINGAR_PER_SEK;
+        return a;
+    }
+
+    function nivaa(e) {
+        if (e < 28) { return { namn: "Svært svakt", farge: "#f87171", pst: 15 }; }
+        if (e < 40) { return { namn: "Svakt", farge: "#fb923c", pst: 35 }; }
+        if (e < 60) { return { namn: "Middels", farge: "#fbbf24", pst: 60 }; }
+        if (e < 80) { return { namn: "Sterkt", farge: "#a3e635", pst: 82 }; }
+        return { namn: "Svært sterkt", farge: "#34d399", pst: 100 };
+    }
+
+    function tipsListe(a) {
+        var t = [];
+        if (a.vanleg) { t.push(["fa-skull-crossbones", "#f87171", "Dette passordet står på lister over vanlege passord. Hackarar prøver dei først."]); }
+        if (!a.lang) { t.push(["fa-ruler-horizontal", "#fbbf24", "Bruk minst 12 teikn. Lengd er det som hjelper mest."]); }
+        if (!a.liten) { t.push(["fa-font", "#fbbf24", "Legg til små bokstavar."]); }
+        if (!a.stor) { t.push(["fa-arrow-up-a-z", "#fbbf24", "Legg til store bokstavar."]); }
+        if (!a.tal) { t.push(["fa-hashtag", "#fbbf24", "Legg til nokre tal."]); }
+        if (!a.spesial) { t.push(["fa-asterisk", "#fbbf24", "Legg til spesialteikn, som ! ? # eller %."]); }
+        if (a.gjentak) { t.push(["fa-repeat", "#fb923c", "Unngå gjentakande teikn som «aaa» eller «111»."]); }
+        if (a.sekvens) { t.push(["fa-arrow-down-1-9", "#fb923c", "Unngå rekkjer som «abc» eller «123»."]); }
+        if (t.length === 0) {
+            t.push(["fa-circle-check", "#34d399", "Flott passord! Bruk eit unikt passord på kvar teneste."]);
+            t.push(["fa-vault", "#22d3ee", "Bruk ein passordhandterar, og skru på 2FA."]);
+        } else {
+            t.push(["fa-comment-dots", "#22d3ee", "Tips: Ei setning med fire tilfeldige ord er lang og lett å hugse."]);
+        }
+        return t;
+    }
+
+    function oppdaterPassord() {
+        var p = $("pwInn").value;
+        var a = analyser(p);
+        var n = nivaa(a.entropi);
+        var tom = p.length === 0;
+
+        $("pwLengd").textContent = p.length + (p.length === 1 ? " teikn" : " teikn");
+        $("pwBar").style.width = tom ? "0" : n.pst + "%";
+        $("pwBar").style.background = n.farge;
+        $("pwBarRot").setAttribute("aria-valuenow", tom ? "0" : String(n.pst));
+        $("pwNamn").textContent = tom ? "–" : n.namn;
+        $("pwNamn").style.color = tom ? "" : n.farge;
+        $("pwTid").textContent = tom ? "–" : formaterTid(a.sekund);
+        $("pwTid").style.color = tom ? "" : n.farge;
+
+        var krav = { lengd: a.lang, liten: a.liten, stor: a.stor, tal: a.tal, spesial: a.spesial };
+        Array.prototype.forEach.call(document.querySelectorAll("#pwKrav .krav"), function (k) {
+            var ok = krav[k.getAttribute("data-k")];
+            k.classList.toggle("ok", !!ok);
+            k.firstChild.className = "fa-solid " + (ok ? "fa-circle-check" : "fa-circle");
+        });
+
+        var ul = $("pwTips");
+        ul.textContent = "";
+        if (tom) { ul.appendChild(el("li", "", "Skriv eit passord for å få tips.")); return; }
+        tipsListe(a).forEach(function (x) {
+            var li = el("li", "flex gap-3 items-start");
+            var i = el("i", "fa-solid " + x[0] + " mt-1");
+            i.style.color = x[1];
+            li.appendChild(i);
+            li.appendChild(el("span", "", x[2]));
+            ul.appendChild(li);
+        });
+    }
+
+    $("pwInn").addEventListener("input", oppdaterPassord);
+    $("pwVis").addEventListener("click", function () {
+        var inn = $("pwInn");
+        var vis = inn.type === "password";
+        inn.type = vis ? "text" : "password";
+        $("pwVis").firstChild.className = "fa-solid " + (vis ? "fa-eye-slash" : "fa-eye");
+        inn.focus();
+    });
+    oppdaterPassord();
+
+    /* =====================================================
+       2. 2FA-simulator
+       ===================================================== */
+    var PERIODE = 30000;
+    var DEMO_BRUKAR = "elev";
+    var DEMO_PASSORD = "Sikker!2FA";
+
+    function kodeFor(teljar) {
+        var s = "2FA-DEMO-HEMMELEG-" + teljar;
+        var h = 2166136261;
+        for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+        h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b) >>> 0;
+        h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35) >>> 0;
+        h ^= h >>> 16;
+        var k = String(h % 1000000);
+        while (k.length < 6) { k = "0" + k; }
+        return k;
+    }
+
+    function teljarNo() { return Math.floor(Date.now() / PERIODE); }
+    function formaterKode(k) { return k.slice(0, 3) + " " + k.slice(3); }
+
+    var sistTeljar = -1;
+    function tikk() {
+        var no = Date.now();
+        var t = Math.floor(no / PERIODE);
+        var att = PERIODE - (no % PERIODE);
+        if (t !== sistTeljar) {
+            sistTeljar = t;
+            var kodeEl = $("telKode");
+            kodeEl.textContent = formaterKode(kodeFor(t));
+            kodeEl.classList.remove("blink");
+            void kodeEl.offsetWidth;
+            kodeEl.classList.add("blink");
+        }
+        var sek = Math.ceil(att / 1000);
+        $("telBar").style.width = (att / PERIODE * 100) + "%";
+        $("telBar").style.background = sek <= 5 ? "#f87171" : "#34d399";
+        $("telSek").textContent = sek + " s";
+    }
+    tikk();
+    setInterval(tikk, 250);
+
+    function melding(tekst, type) {
+        var m = $("loggMelding");
+        m.textContent = tekst;
+        m.style.color = type === "ok" ? "#34d399" : type === "feil" ? "#f87171" : "#94a3b8";
+    }
+    function rist() {
+        var k = $("loggKort");
+        k.classList.remove("rist");
+        void k.offsetWidth;
+        k.classList.add("rist");
+    }
+    function visSteg(n) {
+        ["steg1", "steg2", "steg3"].forEach(function (id, i) {
+            var e = $(id);
+            e.classList.toggle("hidden", i !== n - 1);
+            if (i === n - 1) { e.classList.remove("inn"); void e.offsetWidth; e.classList.add("inn"); }
+        });
+        melding("", "");
+    }
+
+    $("form1").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var b = $("brukar").value.trim();
+        var p = $("pass").value;
+        if (!b || !p) { melding("Fyll inn både brukarnamn og passord.", "feil"); rist(); return; }
+        if (b.toLowerCase() !== DEMO_BRUKAR || p !== DEMO_PASSORD) {
+            melding("Feil brukarnamn eller passord. Prøv igjen.", "feil");
+            rist();
+            return;
+        }
+        visSteg(2);
+        $("kodeInn").value = "";
+        $("kodeInn").focus();
+    });
+
+    $("kodeInn").addEventListener("input", function () {
+        var v = $("kodeInn").value.replace(/\D/g, "").slice(0, 6);
+        $("kodeInn").value = v.length > 3 ? v.slice(0, 3) + " " + v.slice(3) : v;
+    });
+
+    $("form2").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var kode = $("kodeInn").value.replace(/\D/g, "");
+        if (kode.length !== 6) { melding("Koden må ha 6 siffer.", "feil"); rist(); return; }
+        var t = teljarNo();
+        if (kode === kodeFor(t) || kode === kodeFor(t - 1)) {
+            visSteg(3);
+            melding("Innlogging godkjend ✔", "ok");
+            konfetti({ particleCount: 160, spread: 80, origin: { y: 0.65 }, colors: ["#22d3ee", "#34d399", "#a78bfa"] });
+        } else {
+            melding("Feil kode. Sjekk mobilen og prøv igjen. Koden byter kvart 30. sekund.", "feil");
+            rist();
+            $("kodeInn").select();
+        }
+    });
+
+    $("tilbakeSteg1").addEventListener("click", function () { visSteg(1); $("pass").value = ""; $("pass").focus(); });
+    $("loggUt").addEventListener("click", function () {
+        $("brukar").value = ""; $("pass").value = "";
+        visSteg(1);
+        $("brukar").focus();
+    });
+
+    /* =====================================================
+       3. Faktorkort
+       ===================================================== */
+    Array.prototype.forEach.call(document.querySelectorAll(".faktor"), function (k) {
+        k.addEventListener("click", function () {
+            var open = k.getAttribute("aria-expanded") === "true";
+            k.setAttribute("aria-expanded", open ? "false" : "true");
+        });
+    });
+
+    /* =====================================================
+       4. Quiz
+       ===================================================== */
+    var SPM = [
+        { q: "Kva betyr 2FA?", a: ["Du loggar inn to gonger med same passord", "Du brukar to ulike typar bevis for kven du er", "Du har to ulike brukarkontoar"], r: 1,
+          f: "To-faktor-autentisering krev to ulike faktorar, til dømes noko du veit (passord) og noko du har (mobil)." },
+        { q: "Kva av dette er «noko du har»?", a: ["Passordet ditt", "Fingeravtrykket ditt", "Ein YubiKey eller mobilen din"], r: 2,
+          f: "Ein fysisk ting som mobil eller YubiKey er «noko du har». Passord er «noko du veit», og fingeravtrykk er «noko du er»." },
+        { q: "Passordet ditt lekkar i eit datainnbrot. Kva beskyttar deg best?", a: ["At passordet er langt", "2FA slått på på kontoen", "At du bruker same passord overalt"], r: 1,
+          f: "Med 2FA treng ein angriper også koden frå mobilen din, så eit lekt passord åleine hjelper han ikkje." }
+    ];
+    var qz = { nr: 0, poeng: 0, svart: false };
+    var kort = $("quizKort");
+
+    function startQuiz() { qz.nr = 0; qz.poeng = 0; visSpm(); }
+
+    function visSpm() {
+        var s = SPM[qz.nr];
+        qz.svart = false;
+        kort.textContent = "";
+        var topp = el("div", "flex justify-between text-slate-400 font-semibold mb-2");
+        topp.appendChild(el("span", "", "Spørsmål " + (qz.nr + 1) + " av " + SPM.length));
+        var poeng = el("span", "", "Poeng: " + qz.poeng);
+        topp.appendChild(poeng);
+        kort.appendChild(topp);
+        kort.appendChild(el("h3", "text-xl font-bold mb-4", s.q));
+
+        var liste = el("div", "grid gap-3");
+        var knappar = [];
+        var fb = el("div", "mt-4 p-4 rounded-xl border border-white/10 bg-black/30 min-h-[3.5rem]", "Vel eit svar.");
+        fb.setAttribute("aria-live", "polite");
+        var neste = el("button", "btn mt-4", qz.nr === SPM.length - 1 ? "Sjå resultatet 🏁" : "Neste spørsmål ➜");
+        neste.type = "button";
+        neste.disabled = true;
+        neste.style.opacity = "0.45";
+
+        stokk(s.a.map(function (_, i) { return i; })).forEach(function (idx) {
+            var b = el("button", "alt", s.a[idx]);
+            b.type = "button";
+            b.addEventListener("click", function () {
+                if (qz.svart) { return; }
+                qz.svart = true;
+                var rett = idx === s.r;
+                if (rett) { qz.poeng++; }
+                knappar.forEach(function (k) { k.b.disabled = true; if (k.i === s.r) { k.b.classList.add("rett"); } });
+                if (!rett) { b.classList.add("feil"); }
+                fb.style.borderColor = rett ? "#34d399" : "#f87171";
+                fb.textContent = (rett ? "✅ Rett! " : "❌ Feil. ") + s.f;
+                poeng.textContent = "Poeng: " + qz.poeng;
+                neste.disabled = false;
+                neste.style.opacity = "1";
+                neste.focus();
+            });
+            knappar.push({ b: b, i: idx });
+            liste.appendChild(b);
+        });
+        kort.appendChild(liste);
+        kort.appendChild(fb);
+        neste.addEventListener("click", function () {
+            if (qz.nr < SPM.length - 1) { qz.nr++; visSpm(); } else { sluttQuiz(); }
+        });
+        kort.appendChild(neste);
+    }
+
+    function sluttQuiz() {
+        var n = SPM.length;
+        var melding2, ikon;
+        if (qz.poeng === n) { melding2 = "Perfekt! Du er ein ekte 2FA-ekspert. Slå på 2FA på alle kontoane dine!"; ikon = "🏆"; }
+        else if (qz.poeng === n - 1) { melding2 = "Veldig bra! Les om faktorane ein gong til, så sit alt."; ikon = "😎"; }
+        else if (qz.poeng >= 1) { melding2 = "Du er på veg! Prøv 2FA-simulatoren og ta quizen på nytt."; ikon = "🙂"; }
+        else { melding2 = "Ingen fare! Sjå gjennom sidene og prøv igjen. Du får det til!"; ikon = "💪"; }
+
+        kort.textContent = "";
+        var boks = el("div", "text-center inn");
+        boks.appendChild(el("h3", "text-2xl font-bold", "Resultat " + ikon));
+        var tal = el("div", "text-7xl font-extrabold neon-text my-2", qz.poeng + " / " + n);
+        boks.appendChild(tal);
+        boks.appendChild(el("p", "text-slate-200 mb-4", melding2));
+        var igjen = el("button", "btn", "↺ Prøv igjen");
+        igjen.type = "button";
+        igjen.addEventListener("click", startQuiz);
+        boks.appendChild(igjen);
+        kort.appendChild(boks);
+        if (qz.poeng === n) {
+            konfetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ["#22d3ee", "#34d399", "#a78bfa", "#fbbf24"] });
+            setTimeout(function () { konfetti({ particleCount: 120, angle: 60, spread: 70, origin: { x: 0, y: 0.7 } }); konfetti({ particleCount: 120, angle: 120, spread: 70, origin: { x: 1, y: 0.7 } }); }, 350);
+        }
+    }
+
+    startQuiz();
+})();
+</script>
 </body>
 </html>
