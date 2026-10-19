@@ -3,127 +3,135 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0a1930">
+    <meta name="theme-color" content="#2563eb">
     <title>Gruppe 5: DNS</title>
     <link rel="stylesheet" href="gruppe5.css">
 </head>
 <body>
-<div class="wrap">
 
-    <header class="topp">
-        <h1>🌐 Lær om <span>DNS</span></h1>
-        <p>Gruppe 5 · For deg på 10. trinn</p>
-    </header>
+<nav class="topplinje">
+    <a href="#topp" class="logo">🌐 DNS</a>
+    <div class="lenkjer">
+        <a href="#slik">Slik fungerer det</a>
+        <a href="#lab">DNS-lab</a>
+        <a href="#quiz">Quiz</a>
+    </div>
+</nav>
 
-    <nav class="meny" aria-label="Hovudmeny">
-        <button type="button" data-visning="heim" class="aktiv"><span class="ikon">🏠</span>Heim</button>
-        <button type="button" data-visning="slik"><span class="ikon">🎬</span>Slik fungerer DNS</button>
-        <button type="button" data-visning="lab"><span class="ikon">🔬</span>DNS-lab</button>
-        <button type="button" data-visning="quiz"><span class="ikon">🏆</span>Quiz</button>
-    </nav>
+<header id="topp" class="helt">
+    <div class="helt-innhald vis">
+        <p class="merkelapp">Gruppe 5 · 10. trinn</p>
+        <h1>DNS – internettets <span>telefonbok</span></h1>
+        <p class="ingress">Du hugsar namn som <b>nrk.no</b>. Datamaskiner brukar tal, kalla IP-adresser. DNS gjer om namnet til talet – på brøkdelen av eit sekund.</p>
+        <a href="#slik" class="knapp">Start her ↓</a>
+    </div>
+    <div class="helt-figur vis" aria-hidden="true">
+        <div class="bok">
+            <div class="rad"><span>nrk.no</span><span>→</span><span>160.68.205.231</span></div>
+            <div class="rad"><span>vg.no</span><span>→</span><span>195.88.54.16</span></div>
+            <div class="rad"><span>google.com</span><span>→</span><span>142.250.74.14</span></div>
+        </div>
+    </div>
+</header>
 
-    <main>
+<main>
 
-        <!-- HEIM -->
-        <section id="heim" class="visning aktiv" aria-label="Heim">
-            <div class="kort helt">
-                <div class="emoji" aria-hidden="true">📖</div>
-                <h2>Kva er DNS?</h2>
-                <p class="stor"><span class="merk">DNS</span> er telefonboka til internett.</p>
-                <p>Vi hugsar namn, som <span class="kode">nrk.no</span>. Maskiner brukar tal, som <span class="kode">160.68.205.231</span>. DNS gjer om namnet til talet.</p>
+    <section class="seksjon">
+        <h2 class="vis">Kvifor treng vi DNS?</h2>
+        <div class="rutenett">
+            <div class="kort vis">
+                <div class="ikon">🧠</div>
+                <h3>Namn er lette å hugse</h3>
+                <p>Det er enklare å hugse <b>yr.no</b> enn ei lang rekkje med tal.</p>
             </div>
-
-            <div class="kort">
-                <h3>Samanlikning</h3>
-                <div class="analogi">
-                    <div>📱 Telefonboka<br><small>Namn → telefonnummer</small></div>
-                    <div class="pil" aria-hidden="true">≈</div>
-                    <div>🌐 DNS<br><small>Domenenamn → IP-adresse</small></div>
-                </div>
-                <p>Utan DNS måtte du skrive lange tal for å opne ei nettside. Med DNS skriv du berre namnet.</p>
+            <div class="kort vis">
+                <div class="ikon">🔢</div>
+                <h3>Maskiner brukar tal</h3>
+                <p>Kvar server på internett har ei <b>IP-adresse</b>, til dømes 151.101.1.140.</p>
             </div>
-
-            <div class="kort">
-                <h3>Kom i gang</h3>
-                <div class="snarvegar">
-                    <button type="button" class="knapp" data-gaa="slik">🎬 Sjå animasjonen</button>
-                    <button type="button" class="knapp" data-gaa="lab">🔬 Prøv DNS-lab</button>
-                    <button type="button" class="knapp" data-gaa="quiz">🏆 Ta quizen</button>
-                </div>
+            <div class="kort vis">
+                <div class="ikon">📖</div>
+                <h3>DNS slår opp</h3>
+                <p>DNS fungerer som ei telefonbok: du søkjer på namnet og får nummeret.</p>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- SLIK FUNGERER DNS -->
-        <section id="slik" class="visning" aria-label="Slik fungerer DNS">
-            <div class="kort">
-                <h2>Slik fungerer DNS</h2>
-                <p>Du skriv <span class="kode">eksempel.no</span> i nettlesaren. Følg med på kva som skjer!</p>
+    <section id="slik" class="seksjon">
+        <h2 class="vis">Slik fungerer DNS</h2>
+        <p class="undertekst vis">Trykk på knappen og sjå kva som skjer når du skriv <b>nrk.no</b>.</p>
 
-                <div class="scene" id="scene">
-                    <div class="pakke" id="pakke" aria-hidden="true">📨</div>
-                    <div class="node" data-node="0"><span class="ikon" aria-hidden="true">💻</span><div><strong>Nettlesaren din</strong><small>Vil opne eksempel.no</small></div></div>
-                    <div class="node" data-node="1"><span class="ikon" aria-hidden="true">🧭</span><div><strong>DNS-resolver</strong><small>Hjelparen som leitar for deg</small></div></div>
-                    <div class="node" data-node="2"><span class="ikon" aria-hidden="true">🌍</span><div><strong>Rotserver</strong><small>Veit kor kvar endelse bur (.no, .com …)</small></div></div>
-                    <div class="node" data-node="3"><span class="ikon" aria-hidden="true">🇳🇴</span><div><strong>.no-server</strong><small>Veit kven som styrer alle .no-namn</small></div></div>
-                    <div class="node" data-node="4"><span class="ikon" aria-hidden="true">🗄️</span><div><strong>Domeneserveren</strong><small>Har det endelege svaret</small></div></div>
-                </div>
-
-                <div class="snakkeboble" id="boble" aria-live="polite">
-                    <div class="steg" id="stegTal">Klar</div>
-                    <div id="stegTekst">Trykk «Start» for å sjå korleis eit domenenamn blir funne.</div>
-                </div>
-                <div class="framdrift" aria-hidden="true"><div id="framdrift"></div></div>
-
-                <div class="knapperad">
-                    <button type="button" class="knapp" id="animStart">▶ Start</button>
-                    <button type="button" class="knapp sekundaer" id="animNeste">Neste steg ➜</button>
-                    <button type="button" class="knapp sekundaer" id="animNull">↺ Start på nytt</button>
-                </div>
+        <div class="kort animasjon vis">
+            <div class="bane" id="bane">
+                <div class="node" data-steg="0"><div class="nikon">💻</div><span>Din PC</span></div>
+                <div class="node" data-steg="1"><div class="nikon">📡</div><span>DNS-resolver</span></div>
+                <div class="node" data-steg="2"><div class="nikon">🌍</div><span>Rot-server</span></div>
+                <div class="node" data-steg="3"><div class="nikon">🇳🇴</div><span>.no-server</span></div>
+                <div class="node" data-steg="4"><div class="nikon">🏢</div><span>nrk.no-server</span></div>
+                <div class="pakke" id="pakke">✉️</div>
             </div>
-        </section>
-
-        <!-- DNS-LAB -->
-        <section id="lab" class="visning" aria-label="DNS-lab">
-            <div class="kort">
-                <h2>DNS-lab</h2>
-                <p>Skriv inn eit domenenamn og sjå eit <strong>simulert</strong> DNS-oppslag. Svara er laga av programmet og er ikkje ekte.</p>
-
-                <form class="skjema" id="labSkjema" autocomplete="off">
-                    <label for="domene" style="position:absolute;left:-9999px">Domenenamn</label>
-                    <input type="text" id="domene" placeholder="t.d. nrk.no" inputmode="url" autocapitalize="off" spellcheck="false" maxlength="100">
-                    <button type="submit" class="knapp" id="labKnapp">🔍 Slå opp</button>
-                </form>
-
-                <div class="eksempel">
-                    <span>Prøv:</span>
-                    <button type="button" class="chip" data-domene="stord.vgs.no">stord.vgs.no</button>
-                    <button type="button" class="chip" data-domene="nrk.no">nrk.no</button>
-                    <button type="button" class="chip" data-domene="wikipedia.org">wikipedia.org</button>
-                </div>
-
-                <div class="feil" id="labFeil" role="alert"></div>
-                <ul class="logg" id="labLogg" aria-live="polite"></ul>
-                <div id="labResultat" aria-live="polite"></div>
-
-                <div class="knapperad">
-                    <button type="button" class="knapp sekundaer" id="labTom">🧹 Tøm hurtigbuffer</button>
-                    <button type="button" class="knapp sekundaer" id="labNull">↺ Nullstill</button>
-                </div>
-                <p style="margin-top:12px;color:var(--muted);font-size:15px">Tips: Slå opp same namn to gonger. Kva skjer andre gongen?</p>
+            <p class="forklaring" id="forklaring">Trykk «Spel av» for å starte.</p>
+            <div class="knapperad">
+                <button class="knapp" id="spelAv">▶ Spel av</button>
+                <button class="knapp sekundar" id="nesteSteg">Neste steg →</button>
             </div>
-        </section>
+        </div>
 
-        <!-- QUIZ -->
-        <section id="quiz" class="visning" aria-label="Quiz">
-            <div class="kort" id="quizKort"></div>
-        </section>
+        <div class="tidslinje">
+            <div class="steg vis"><b>1</b><p>Du skriv <b>nrk.no</b> i nettlesaren.</p></div>
+            <div class="steg vis"><b>2</b><p>PC-en spør ein <b>DNS-resolver</b> (ofte hos internettleverandøren).</p></div>
+            <div class="steg vis"><b>3</b><p>Resolveren spør <b>rot-serveren</b>, som veit kven som har ansvar for <b>.no</b>.</p></div>
+            <div class="steg vis"><b>4</b><p><b>.no-serveren</b> veit kven som har ansvar for <b>nrk.no</b>.</p></div>
+            <div class="steg vis"><b>5</b><p>Serveren til <b>nrk.no</b> svarar med IP-adressa. Nettsida lastar!</p></div>
+            <div class="steg vis"><b>💾</b><p>Svaret blir lagra ei stund (<b>cache</b>), så neste gong går det endå raskare.</p></div>
+        </div>
+    </section>
 
-    </main>
+    <section id="lab" class="seksjon">
+        <h2 class="vis">DNS-lab 🔬</h2>
+        <p class="undertekst vis">Skriv inn eit domenenamn og sjå eit simulert DNS-oppslag.</p>
 
-    <footer>
-        <a href="index.html">← Tilbake til VM i PROMPTING26</a>
-    </footer>
-</div>
+        <div class="kort lab vis">
+            <form id="labSkjema" class="lab-skjema">
+                <input id="domene" type="text" placeholder="t.d. nrk.no" autocomplete="off" aria-label="Domenenamn">
+                <button class="knapp" type="submit">Slå opp</button>
+            </form>
+            <div class="forslag">
+                <span>Prøv:</span>
+                <button type="button" class="brikke">nrk.no</button>
+                <button type="button" class="brikke">yr.no</button>
+                <button type="button" class="brikke">google.com</button>
+                <button type="button" class="brikke">stord.vgs.no</button>
+            </div>
+            <div class="logg" id="logg" aria-live="polite">
+                <p class="tom">Resultatet kjem her …</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="quiz" class="seksjon">
+        <h2 class="vis">Quiz 🏆</h2>
+        <p class="undertekst vis">Fem spørsmål. Kor mange klarer du?</p>
+
+        <div class="kort quiz vis" id="quizKort">
+            <div class="quiz-topp">
+                <span id="quizNr">Spørsmål 1 av 5</span>
+                <span id="quizPoeng">Poeng: 0</span>
+            </div>
+            <div class="framdrift"><div id="framdrift"></div></div>
+            <h3 id="sporsmal"></h3>
+            <div class="svar" id="svar"></div>
+            <p class="tilbakemelding" id="tilbakemelding"></p>
+            <button class="knapp" id="nesteSpm" hidden>Neste spørsmål →</button>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>Laga av gruppe 5 · VM i PROMPTING26 · IM Stord vgs</p>
+    <a href="index.html">← Tilbake til oversikta</a>
+</footer>
 
 <script src="gruppe5.js"></script>
 </body>

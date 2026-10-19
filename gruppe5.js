@@ -1,492 +1,233 @@
-/* Gruppe 5: DNS – JavaScript */
-(function () {
-    "use strict";
-
-    var $ = function (sel, rot) { return (rot || document).querySelector(sel); };
-    var $$ = function (sel, rot) { return Array.prototype.slice.call((rot || document).querySelectorAll(sel)); };
-
-    /* =====================================================
-       Meny og visningar
-       ===================================================== */
-    var visningar = ["heim", "slik", "lab", "quiz"];
-
-    function visVisning(id, oppdaterHash) {
-        if (visningar.indexOf(id) === -1) { id = "heim"; }
-        $$(".visning").forEach(function (el) { el.classList.toggle("aktiv", el.id === id); });
-        $$(".meny button").forEach(function (b) {
-            var aktiv = b.getAttribute("data-visning") === id;
-            b.classList.toggle("aktiv", aktiv);
-            if (aktiv) { b.setAttribute("aria-current", "page"); } else { b.removeAttribute("aria-current"); }
-        });
-        if (id !== "slik") { stoppAnimasjon(); }
-        if (id === "slik") { plasserPakke(animSteg < 0 ? 0 : STEG[animSteg].node, true); }
-        if (oppdaterHash !== false && history.replaceState) { history.replaceState(null, "", "#" + id); }
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    $$(".meny button").forEach(function (b) {
-        b.addEventListener("click", function () { visVisning(b.getAttribute("data-visning")); });
-    });
-    $$("[data-gaa]").forEach(function (b) {
-        b.addEventListener("click", function () { visVisning(b.getAttribute("data-gaa")); });
-    });
-
-    /* =====================================================
-       Slik fungerer DNS – animasjon
-       ===================================================== */
-    var STEG = [
-        { node: 0, tekst: "Du skriv eksempel.no i nettlesaren. Nettlesaren spør: «Kva er IP-adressa til eksempel.no?»" },
-        { node: 1, tekst: "DNS-resolveren har ikkje svaret i minnet. Han byrjar å leite og spør rotserveren." },
-        { node: 2, tekst: "Rotserveren seier: «Eg kjenner ikkje eksempel.no, men spør .no-serveren. Han kan hjelpe deg!»" },
-        { node: 3, tekst: ".no-serveren seier: «Domenet eksempel.no høyrer til ein bestemt domeneserver. Spør han!»" },
-        { node: 4, tekst: "Domeneserveren veit svaret: «eksempel.no har IP-adressa 203.0.113.42»" },
-        { node: 1, tekst: "Resolveren får svaret. Han lagrar det ei stund (hurtigbuffer), og sender det vidare til deg." },
-        { node: 0, tekst: "Nettlesaren har fått IP-adressa 203.0.113.42 og kan hente nettsida. Ferdig! 🎉" }
-    ];
-
-    var animSteg = -1;
-    var animTimer = null;
-
-    var scene = $("#scene");
-    var pakke = $("#pakke");
-    var noder = $$(".node", scene);
-
-    function plasserPakke(nodeIdx, utanOvergang) {
-        var n = noder[nodeIdx];
-        if (!n || !n.offsetHeight) { return; }
-        if (utanOvergang) { pakke.style.transition = "none"; }
-        pakke.style.top = (n.offsetTop + (n.offsetHeight - pakke.offsetHeight) / 2) + "px";
-        if (utanOvergang) {
-            void pakke.offsetWidth;
-            pakke.style.transition = "";
+// Scroll-animasjon
+const observator = new IntersectionObserver((element) => {
+    element.forEach((e) => {
+        if (e.isIntersecting) {
+            e.target.classList.add('synleg');
+            observator.unobserve(e.target);
         }
-    }
+    });
+}, { threshold: 0.15 });
+document.querySelectorAll('.vis').forEach((el) => observator.observe(el));
 
-    function visSteg(i) {
-        animSteg = i;
-        var s = STEG[i];
-        noder.forEach(function (n, idx) { n.classList.toggle("aktiv", idx === s.node); });
-        plasserPakke(s.node);
-        $("#stegTal").textContent = "Steg " + (i + 1) + " av " + STEG.length;
-        $("#stegTekst").textContent = s.tekst;
-        $("#framdrift").style.width = ((i + 1) / STEG.length * 100) + "%";
-        var ferdig = i === STEG.length - 1;
-        $("#animNeste").disabled = ferdig;
-        if (ferdig) {
-            stoppAnimasjon();
-            $("#animStart").textContent = "▶ Spel igjen";
-        }
-    }
+// DNS-animasjon
+const stega = [
+    'Du skriv <b>nrk.no</b>. PC-en sjekkar først om han hugsar svaret (cache). Nei – han må spørje.',
+    'PC-en spør <b>DNS-resolveren</b>: «Kva er IP-adressa til nrk.no?»',
+    'Resolveren spør <b>rot-serveren</b>. Svar: «Spør .no-serveren!»',
+    'Resolveren spør <b>.no-serveren</b>. Svar: «Spør serveren til nrk.no!»',
+    '<b>nrk.no-serveren</b> svarar: «IP-adressa er <b>160.68.205.231</b>.» Svaret går tilbake til PC-en, og nettsida lastar! 🎉'
+];
+const noder = document.querySelectorAll('.node');
+const pakke = document.getElementById('pakke');
+const forklaring = document.getElementById('forklaring');
+const spelAv = document.getElementById('spelAv');
+const nesteSteg = document.getElementById('nesteSteg');
+let steg = -1;
+let timer = null;
 
-    function stoppAnimasjon() {
-        if (animTimer) { clearInterval(animTimer); animTimer = null; }
-        var b = $("#animStart");
-        if (b && animSteg < STEG.length - 1) { b.textContent = animSteg < 0 ? "▶ Start" : "▶ Hald fram"; }
-    }
+function visSteg(n) {
+    steg = n;
+    noder.forEach((node, i) => node.classList.toggle('aktiv', i === n));
+    const node = noder[n];
+    const bane = document.getElementById('bane');
+    const midt = node.offsetLeft + node.offsetWidth / 2;
+    pakke.style.opacity = 1;
+    pakke.style.left = midt + 'px';
+    pakke.textContent = n === 4 ? '✅' : '✉️';
+    forklaring.innerHTML = stega[n];
+}
 
-    function nullstillAnimasjon() {
-        stoppAnimasjon();
-        animSteg = -1;
-        noder.forEach(function (n) { n.classList.remove("aktiv"); });
-        $("#stegTal").textContent = "Klar";
-        $("#stegTekst").textContent = "Trykk «Start» for å sjå korleis eit domenenamn blir funne.";
-        $("#framdrift").style.width = "0";
-        $("#animNeste").disabled = false;
-        $("#animStart").textContent = "▶ Start";
-        plasserPakke(0);
-    }
+function nesteStegFn() {
+    clearInterval(timer);
+    timer = null;
+    spelAv.textContent = '▶ Spel av';
+    visSteg(steg >= 4 ? 0 : steg + 1);
+}
 
-    $("#animStart").addEventListener("click", function () {
-        if (animTimer) {
-            stoppAnimasjon();
-            $("#animStart").textContent = "▶ Hald fram";
+spelAv.addEventListener('click', () => {
+    if (timer) {
+        clearInterval(timer);
+        timer = null;
+        spelAv.textContent = '▶ Spel av';
+        return;
+    }
+    spelAv.textContent = '⏸ Pause';
+    visSteg(0);
+    timer = setInterval(() => {
+        if (steg >= 4) {
+            clearInterval(timer);
+            timer = null;
+            spelAv.textContent = '↻ Spel av igjen';
             return;
         }
-        if (animSteg >= STEG.length - 1) { nullstillAnimasjon(); }
-        if (animSteg < 0) { visSteg(0); }
-        $("#animStart").textContent = "⏸ Pause";
-        animTimer = setInterval(function () {
-            if (animSteg < STEG.length - 1) { visSteg(animSteg + 1); }
-        }, 3200);
+        visSteg(steg + 1);
+    }, 2200);
+});
+nesteSteg.addEventListener('click', nesteStegFn);
+window.addEventListener('resize', () => { if (steg >= 0) visSteg(steg); });
+
+// DNS-lab
+const kjende = {
+    'nrk.no': '160.68.205.231',
+    'vg.no': '195.88.54.16',
+    'yr.no': '151.101.1.140',
+    'google.com': '142.250.74.14',
+    'youtube.com': '142.250.74.110',
+    'stord.vgs.no': '185.71.212.42',
+    'snapchat.com': '34.117.71.2',
+    'tiktok.com': '23.62.226.172',
+    'wikipedia.org': '185.15.59.224'
+};
+const cache = {};
+const skjema = document.getElementById('labSkjema');
+const domeneInput = document.getElementById('domene');
+const logg = document.getElementById('logg');
+let labKoyrer = false;
+
+function lagIp(namn) {
+    let h = 0;
+    for (const c of namn) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return [(h % 200) + 20, (h >> 8) % 256, (h >> 16) % 256, ((h >> 24) % 254) + 1].join('.');
+}
+
+function ventMs(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+function skriv(tekst, klasse = '') {
+    const p = document.createElement('p');
+    p.className = 'linje ' + klasse;
+    p.innerHTML = tekst;
+    logg.appendChild(p);
+}
+
+async function slaaOpp(namn) {
+    if (labKoyrer) return;
+    namn = namn.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
+    logg.innerHTML = '';
+    if (!/^[a-z0-9æøå-]+(\.[a-z0-9æøå-]+)+$/.test(namn)) {
+        skriv('❌ «' + (namn || 'tomt') + '» ser ikkje ut som eit domenenamn. Prøv t.d. <b>nrk.no</b>', 'feil');
+        return;
+    }
+    labKoyrer = true;
+    const knapp = skjema.querySelector('button');
+    knapp.disabled = true;
+    const tld = namn.split('.').pop();
+    const ip = kjende[namn] || lagIp(namn);
+
+    skriv('💻 Spør etter <b>' + namn + '</b> …', 'info');
+    await ventMs(500);
+    if (cache[namn]) {
+        skriv('💾 Funne i cache! Ingen grunn til å spørje vidare.', 'ok');
+        await ventMs(400);
+    } else {
+        skriv('💾 Ikkje i cache. Spør DNS-resolveren …');
+        await ventMs(700);
+        skriv('📡 Resolver → 🌍 rot-server: «Kven har ansvar for .' + tld + '?»');
+        await ventMs(800);
+        skriv('🌍 Rot-server: «Spør .' + tld + '-serveren.»', 'info');
+        await ventMs(800);
+        skriv('📡 Resolver → .' + tld + '-server: «Kven har ansvar for ' + namn + '?»');
+        await ventMs(800);
+        skriv('🏢 Spør namnetenaren til ' + namn + ' …', 'info');
+        await ventMs(800);
+        cache[namn] = ip;
+    }
+    const tid = cache[namn] && logg.textContent.includes('Funne i cache') ? 2 : 40 + Math.floor(Math.random() * 60);
+    const res = document.createElement('div');
+    res.className = 'resultat linje';
+    res.innerHTML = '✅ <b>' + namn + '</b> → <b>' + ip + '</b><br><small>Tid: ' + tid + ' ms' +
+        (kjende[namn] ? '' : ' · (simulert adresse)') + '</small>';
+    logg.appendChild(res);
+    knapp.disabled = false;
+    labKoyrer = false;
+}
+
+skjema.addEventListener('submit', (e) => {
+    e.preventDefault();
+    slaaOpp(domeneInput.value);
+});
+document.querySelectorAll('.brikke').forEach((b) => {
+    b.addEventListener('click', () => {
+        domeneInput.value = b.textContent;
+        slaaOpp(b.textContent);
     });
+});
 
-    $("#animNeste").addEventListener("click", function () {
-        stoppAnimasjon();
-        if (animSteg < STEG.length - 1) { visSteg(animSteg + 1); }
-        if (animSteg < STEG.length - 1) { $("#animStart").textContent = "▶ Hald fram"; }
+// Quiz
+const sporsmal = [
+    { q: 'Kva gjer DNS?', a: ['Gjer om domenenamn til IP-adresser', 'Lagar nettsider', 'Blokkerer virus', 'Gjer internett raskare med WiFi'], r: 0,
+      f: 'DNS slår opp namnet og finn IP-adressa – som ei telefonbok.' },
+    { q: 'Kva er ei IP-adresse?', a: ['Eit passord', 'Ei adresse i tal som maskiner brukar', 'Namnet på ei nettside', 'Ein type kabel'], r: 1,
+      f: 'IP-adressa er «telefonnummeret» til ein maskin på nettet.' },
+    { q: 'Kva er ein DNS-cache?', a: ['Ein virus', 'Eit lager av svar som er lagra ei stund', 'Ein type ruter', 'Ein nettlesar'], r: 1,
+      f: 'Cachen hugsar svar, så neste oppslag går mykje raskare.' },
+    { q: 'Kven svarar på kven som har ansvar for .no?', a: ['Din PC', 'nrk.no-serveren', 'Rot-serveren', 'Mobilen din'], r: 2,
+      f: 'Rot-serveren veit kvar alle toppdomena, som .no og .com, finst.' },
+    { q: 'Kvifor brukar vi DNS i staden for berre tal?', a: ['Tal er ulovlege', 'Namn er lettare for menneske å hugse', 'Tal er tregare', 'Det er ingen grunn'], r: 1,
+      f: 'Menneske hugsar namn, maskiner brukar tal. DNS koplar dei saman.' }
+];
+let nr = 0, poeng = 0;
+const quizKort = document.getElementById('quizKort');
+const quizHTML = quizKort.innerHTML;
+
+function startQuiz() {
+    nr = 0; poeng = 0;
+    quizKort.innerHTML = quizHTML;
+    document.getElementById('nesteSpm').addEventListener('click', () => {
+        nr++;
+        if (nr < sporsmal.length) visSporsmal(); else visSlutt();
     });
+    visSporsmal();
+}
 
-    $("#animNull").addEventListener("click", nullstillAnimasjon);
-
-    window.addEventListener("resize", function () {
-        if ($("#slik").classList.contains("aktiv")) { plasserPakke(animSteg < 0 ? 0 : STEG[animSteg].node, true); }
+function visSporsmal() {
+    const s = sporsmal[nr];
+    document.getElementById('quizNr').textContent = 'Spørsmål ' + (nr + 1) + ' av ' + sporsmal.length;
+    document.getElementById('quizPoeng').textContent = 'Poeng: ' + poeng;
+    document.getElementById('framdrift').style.width = (nr / sporsmal.length * 100) + '%';
+    document.getElementById('sporsmal').textContent = s.q;
+    const tb = document.getElementById('tilbakemelding');
+    tb.textContent = ''; tb.className = 'tilbakemelding';
+    const neste = document.getElementById('nesteSpm');
+    neste.hidden = true;
+    neste.textContent = nr === sporsmal.length - 1 ? 'Sjå resultatet →' : 'Neste spørsmål →';
+    const svar = document.getElementById('svar');
+    svar.innerHTML = '';
+    s.a.forEach((tekst, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = tekst;
+        b.addEventListener('click', () => vel(i, b));
+        svar.appendChild(b);
     });
+}
 
-    /* =====================================================
-       DNS-lab – simulert oppslag
-       ===================================================== */
-    var hurtigbuffer = {};
-    var labOpptatt = false;
-    var labTimere = [];
-
-    var KJENTE = {
-        "stord.vgs.no": "158.37.42.10",
-        "nrk.no": "160.68.205.231",
-        "wikipedia.org": "185.15.59.224",
-        "eksempel.no": "203.0.113.42"
-    };
-
-    function hash(tekst) {
-        var h = 2166136261;
-        for (var i = 0; i < tekst.length; i++) {
-            h ^= tekst.charCodeAt(i);
-            h = Math.imul(h, 16777619) >>> 0;
-        }
-        return h >>> 0;
+function vel(i, knapp) {
+    const s = sporsmal[nr];
+    const knappar = document.querySelectorAll('#svar button');
+    knappar.forEach((b) => (b.disabled = true));
+    knappar[s.r].classList.add('rett');
+    const tb = document.getElementById('tilbakemelding');
+    if (i === s.r) {
+        poeng++;
+        tb.textContent = '✅ Rett! ' + s.f;
+        tb.className = 'tilbakemelding rett';
+    } else {
+        knapp.classList.add('gale');
+        tb.textContent = '❌ Ikkje heilt. ' + s.f;
+        tb.className = 'tilbakemelding gale';
     }
+    document.getElementById('quizPoeng').textContent = 'Poeng: ' + poeng;
+    document.getElementById('nesteSpm').hidden = false;
+}
 
-    function lagIp(domene) {
-        if (KJENTE[domene]) { return KJENTE[domene]; }
-        var h = hash(domene);
-        var forste = [34, 52, 93, 104, 151, 185, 193, 212][h % 8];
-        var b = (h >>> 3) % 256;
-        var c = (h >>> 11) % 256;
-        var d = ((h >>> 19) % 253) + 1;
-        return forste + "." + b + "." + c + "." + d;
-    }
+function visSlutt() {
+    const melding = poeng === 5 ? ['🏆', 'Perfekt! Du er ein DNS-ekspert!']
+        : poeng >= 3 ? ['🎉', 'Bra jobba! Du kan mykje om DNS.']
+        : ['💪', 'God innsats! Bla opp og les litt meir, og prøv igjen.'];
+    quizKort.innerHTML = '<div class="sluttresultat"><div class="stor">' + melding[0] + '</div>' +
+        '<h3>Du fekk ' + poeng + ' av ' + sporsmal.length + ' poeng</h3>' +
+        '<p>' + melding[1] + '</p><br><button class="knapp" id="igjen">↻ Prøv igjen</button></div>';
+    document.getElementById('igjen').addEventListener('click', startQuiz);
+}
 
-    function reinsDomene(tekst) {
-        var t = tekst.trim().toLowerCase();
-        t = t.replace(/^[a-z]+:\/\//, "");
-        t = t.split(/[\/?#]/)[0];
-        t = t.replace(/:\d+$/, "");
-        t = t.replace(/\.$/, "");
-        return t;
-    }
-
-    function gyldigDomene(d) {
-        return /^([a-z0-9æøå]([a-z0-9æøå-]{0,61}[a-z0-9æøå])?\.)+[a-zæøå]{2,}$/.test(d);
-    }
-
-    function leggTilLogg(ikon, tekst, klasse) {
-        var li = document.createElement("li");
-        if (klasse) { li.className = klasse; }
-        var i = document.createElement("span");
-        i.className = "ikon";
-        i.setAttribute("aria-hidden", "true");
-        i.textContent = ikon;
-        var t = document.createElement("span");
-        t.textContent = tekst;
-        li.appendChild(i);
-        li.appendChild(t);
-        $("#labLogg").appendChild(li);
-    }
-
-    function ryddLab() {
-        labTimere.forEach(clearTimeout);
-        labTimere = [];
-        labOpptatt = false;
-        $("#labLogg").textContent = "";
-        $("#labResultat").textContent = "";
-        $("#labFeil").textContent = "";
-        $("#labKnapp").disabled = false;
-    }
-
-    function visResultat(domene, ip, fraBuffer, ms) {
-        var boks = document.createElement("div");
-        boks.className = "resultat";
-
-        var over = document.createElement("small");
-        over.textContent = domene + " har IP-adressa";
-        var ipEl = document.createElement("span");
-        ipEl.className = "ip";
-        ipEl.textContent = ip;
-
-        var m1 = document.createElement("span");
-        m1.className = "merkelapp";
-        m1.textContent = "Type: A-post";
-        var m2 = document.createElement("span");
-        m2.className = "merkelapp";
-        m2.textContent = "Tid: " + ms + " ms";
-        var m3 = document.createElement("span");
-        m3.className = "merkelapp" + (fraBuffer ? " cache" : "");
-        m3.textContent = fraBuffer ? "⚡ Frå hurtigbuffer" : "🔎 Nytt oppslag";
-
-        boks.appendChild(over);
-        boks.appendChild(ipEl);
-        boks.appendChild(m1);
-        boks.appendChild(m2);
-        boks.appendChild(m3);
-        $("#labResultat").appendChild(boks);
-    }
-
-    function kjorOppslag(rått) {
-        if (labOpptatt) { return; }
-        ryddLab();
-
-        var domene = reinsDomene(rått);
-        if (!domene) {
-            $("#labFeil").textContent = "Skriv inn eit domenenamn først, til dømes nrk.no.";
-            return;
-        }
-        if (!gyldigDomene(domene)) {
-            $("#labFeil").textContent = "«" + domene + "» ser ikkje ut som eit domenenamn. Prøv noko som nrk.no eller stord.vgs.no.";
-            return;
-        }
-
-        $("#domene").value = domene;
-        labOpptatt = true;
-        $("#labKnapp").disabled = true;
-
-        var delar = domene.split(".");
-        var tld = "." + delar[delar.length - 1];
-        var ip = lagIp(domene);
-        var steg = [];
-
-        if (hurtigbuffer[domene]) {
-            steg = [
-                ["💻", "Nettlesaren spør: «Kva er IP-adressa til " + domene + "?»", ""],
-                ["⚡", "Resolveren sjekkar hurtigbufferen… Treff! Svaret er lagra frå sist.", "cache"]
-            ];
-        } else {
-            steg = [
-                ["💻", "Nettlesaren spør: «Kva er IP-adressa til " + domene + "?»", ""],
-                ["🧭", "Resolveren sjekkar hurtigbufferen… Ingen treff. Han må leite.", ""],
-                ["🌍", "Rotserveren svarar: «Spør " + tld + "-serveren.»", ""],
-                ["🏷️", tld + "-serveren svarar: «Spør domeneserveren til " + delar.slice(-2).join(".") + ".»", ""],
-                ["🗄️", "Domeneserveren svarar: «" + domene + " = " + ip + "»", ""],
-                ["💾", "Resolveren lagrar svaret i hurtigbufferen og sender det til deg.", ""]
-            ];
-        }
-
-        steg.forEach(function (s, i) {
-            labTimere.push(setTimeout(function () {
-                leggTilLogg(s[0], s[1], s[2]);
-            }, i * 700));
-        });
-
-        labTimere.push(setTimeout(function () {
-            var frå = !!hurtigbuffer[domene];
-            var ms = frå ? 1 + (hash(domene) % 3) : 20 + (hash(domene + "t") % 60);
-            hurtigbuffer[domene] = ip;
-            visResultat(domene, ip, frå, ms);
-            labOpptatt = false;
-            $("#labKnapp").disabled = false;
-        }, steg.length * 700 + 200));
-    }
-
-    $("#labSkjema").addEventListener("submit", function (e) {
-        e.preventDefault();
-        kjorOppslag($("#domene").value);
-    });
-
-    $$(".chip").forEach(function (c) {
-        c.addEventListener("click", function () {
-            $("#domene").value = c.getAttribute("data-domene");
-            kjorOppslag(c.getAttribute("data-domene"));
-        });
-    });
-
-    $("#labTom").addEventListener("click", function () {
-        hurtigbuffer = {};
-        $("#labFeil").textContent = "";
-        leggTilLogg("🧹", "Hurtigbufferen er tømd. Neste oppslag blir eit heilt nytt.", "cache");
-    });
-
-    $("#labNull").addEventListener("click", function () {
-        ryddLab();
-        $("#domene").value = "";
-        $("#domene").focus();
-    });
-
-    /* =====================================================
-       Quiz
-       ===================================================== */
-    var POENG_PER_SPM = 20;
-
-    var SPORSMAL = [
-        {
-            q: "Kva er DNS?",
-            alt: ["Ei slags telefonbok for internett", "Eit program som stoppar virus", "Ei nettside der du kan spele"],
-            riktig: 0,
-            ok: "Rett! DNS gjer om namn til tal, som ei telefonbok.",
-            nei: "Ikkje heilt. DNS er som ei telefonbok: han gjer om namn til tal."
-        },
-        {
-            q: "Kva får du tilbake når DNS finn eit domenenamn?",
-            alt: ["Eit passord", "Ei IP-adresse", "Eit bilete av nettsida"],
-            riktig: 1,
-            ok: "Riktig! IP-adressa fortel kvar nettsida bur på internett.",
-            nei: "Nei. Du får ei IP-adresse, altså talet som fortel kvar nettsida bur."
-        },
-        {
-            q: "Kva av desse er eit domenenamn?",
-            alt: ["192.168.1.1", "stord.vgs.no", "8.8.8.8"],
-            riktig: 1,
-            ok: "Bra! stord.vgs.no er eit namn. Dei to andre er IP-adresser.",
-            nei: "Ikkje denne. Domenenamn er bokstavnamn som stord.vgs.no. Tala er IP-adresser."
-        },
-        {
-            q: "Kvifor opnar ei nettside ofte raskare andre gongen?",
-            alt: ["Svaret er lagra i ein hurtigbuffer", "Internett blir sterkare", "Nettsida blir mindre"],
-            riktig: 0,
-            ok: "Heilt rett! Hurtigbufferen hugsar svaret ei stund, så slepp ein å leite på nytt.",
-            nei: "Nei. Svaret blir lagra i ein hurtigbuffer (cache), så DNS slepp å leite på nytt."
-        },
-        {
-            q: "Kva skjer om DNS sluttar å fungere?",
-            alt: ["Internett er borte for alltid", "Du kan ikkje opne sider med namn, men kan ofte bruke IP-adressa", "Datamaskina tek fyr"],
-            riktig: 1,
-            ok: "Smart! Utan DNS finn du ikkje namna, men IP-adressene finst framleis.",
-            nei: "Nesten. Utan DNS finn ikkje maskina namna, men sidene finst framleis og kan nåast med IP-adressa."
-        }
-    ];
-
-    var kviz = { nr: 0, poeng: 0, rekkefolge: [], svart: false };
-    var quizKort = $("#quizKort");
-
-    function stokk(arr) {
-        var a = arr.slice();
-        for (var i = a.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var t = a[i]; a[i] = a[j]; a[j] = t;
-        }
-        return a;
-    }
-
-    function el(tag, klasse, tekst) {
-        var e = document.createElement(tag);
-        if (klasse) { e.className = klasse; }
-        if (tekst !== undefined) { e.textContent = tekst; }
-        return e;
-    }
-
-    function startQuiz() {
-        kviz.nr = 0;
-        kviz.poeng = 0;
-        kviz.svart = false;
-        visSporsmal();
-    }
-
-    function visSporsmal() {
-        var spm = SPORSMAL[kviz.nr];
-        kviz.svart = false;
-        quizKort.textContent = "";
-
-        var topp = el("div", "quiz-topp");
-        topp.appendChild(el("span", "", "Spørsmål " + (kviz.nr + 1) + " av " + SPORSMAL.length));
-        topp.appendChild(el("span", "", "Poeng: " + kviz.poeng));
-        quizKort.appendChild(topp);
-
-        var bar = el("div", "framdrift");
-        var fyll = el("div");
-        fyll.style.width = (kviz.nr / SPORSMAL.length * 100) + "%";
-        bar.appendChild(fyll);
-        quizKort.appendChild(bar);
-
-        quizKort.appendChild(el("div", "spm", spm.q));
-
-        var rekkefolge = stokk(spm.alt.map(function (_, i) { return i; }));
-        var liste = el("div", "svaralt");
-        var knappar = [];
-
-        var tilbake = el("div", "tilbakemelding", "Vel eit svar.");
-        tilbake.setAttribute("aria-live", "polite");
-
-        var neste = el("button", "knapp", kviz.nr === SPORSMAL.length - 1 ? "Sjå resultatet 🏁" : "Neste spørsmål ➜");
-        neste.type = "button";
-        neste.disabled = true;
-
-        rekkefolge.forEach(function (origIdx) {
-            var b = el("button", "", spm.alt[origIdx]);
-            b.type = "button";
-            b.addEventListener("click", function () {
-                if (kviz.svart) { return; }
-                kviz.svart = true;
-                var rett = origIdx === spm.riktig;
-                if (rett) { kviz.poeng += POENG_PER_SPM; }
-
-                knappar.forEach(function (k) {
-                    k.el.disabled = true;
-                    if (k.idx === spm.riktig) { k.el.classList.add("riktig"); }
-                });
-                if (!rett) { b.classList.add("feil-val"); }
-
-                tilbake.className = "tilbakemelding " + (rett ? "ok" : "nei");
-                tilbake.textContent = (rett ? "✅ +" + POENG_PER_SPM + " poeng. " : "❌ 0 poeng. ") + (rett ? spm.ok : spm.nei);
-                topp.lastChild.textContent = "Poeng: " + kviz.poeng;
-                neste.disabled = false;
-                neste.focus();
-            });
-            knappar.push({ el: b, idx: origIdx });
-            liste.appendChild(b);
-        });
-
-        quizKort.appendChild(liste);
-        quizKort.appendChild(tilbake);
-
-        var rad = el("div", "knapperad");
-        neste.addEventListener("click", function () {
-            if (kviz.nr < SPORSMAL.length - 1) {
-                kviz.nr++;
-                visSporsmal();
-            } else {
-                visResultat2();
-            }
-        });
-        rad.appendChild(neste);
-        quizKort.appendChild(rad);
-    }
-
-    function visResultat2() {
-        var maks = SPORSMAL.length * POENG_PER_SPM;
-        var rette = kviz.poeng / POENG_PER_SPM;
-        var emoji, melding;
-        if (rette === SPORSMAL.length) {
-            emoji = "🏆"; melding = "Perfekt! Du er ein ekte DNS-ekspert!";
-        } else if (rette >= 3) {
-            emoji = "😎"; melding = "Bra jobba! Du kan mykje om DNS.";
-        } else if (rette >= 1) {
-            emoji = "🙂"; melding = "Ikkje dårleg! Sjå animasjonen ein gong til og prøv igjen.";
-        } else {
-            emoji = "💪"; melding = "Ingen fare! Sjå animasjonen og prøv DNS-lab, så tek du det neste gong.";
-        }
-
-        quizKort.textContent = "";
-        var boks = el("div", "sluttpoeng");
-        boks.appendChild(el("h2", "", "Ferdig! " + emoji));
-
-        var tal = el("div", "tal", String(kviz.poeng));
-        tal.appendChild(el("small", "", " / " + maks));
-        boks.appendChild(tal);
-
-        boks.appendChild(el("p", "stor", rette + " av " + SPORSMAL.length + " rette"));
-        var stjerner = el("div", "stjerner", "");
-        stjerner.setAttribute("aria-hidden", "true");
-        stjerner.textContent = "★".repeat(rette) + "☆".repeat(SPORSMAL.length - rette);
-        boks.appendChild(stjerner);
-        boks.appendChild(el("p", "", melding));
-
-        var rad = el("div", "knapperad");
-        rad.style.justifyContent = "center";
-        var igjen = el("button", "knapp", "↺ Prøv igjen");
-        igjen.type = "button";
-        igjen.addEventListener("click", startQuiz);
-        var animBtn = el("button", "knapp sekundaer", "🎬 Sjå animasjonen");
-        animBtn.type = "button";
-        animBtn.addEventListener("click", function () { visVisning("slik"); });
-        rad.appendChild(igjen);
-        rad.appendChild(animBtn);
-        boks.appendChild(rad);
-
-        quizKort.appendChild(boks);
-    }
-
-    /* =====================================================
-       Oppstart
-       ===================================================== */
-    startQuiz();
-    var start = (location.hash || "").replace("#", "");
-    visVisning(visningar.indexOf(start) !== -1 ? start : "heim", false);
-    window.scrollTo(0, 0);
-})();
+startQuiz();
