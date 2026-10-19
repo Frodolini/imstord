@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; }
+html, body { overflow-x: clip; }
+body {
+  @apply bg-mist text-ink font-body antialiased;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(124,77,240,.10) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+.card { @apply bg-white rounded-3xl border border-iris-100 shadow-soft; }
+.chip { @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold; }
+.btn { @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 font-semibold transition-all duration-200 active:scale-[.97] disabled:opacity-40 disabled:pointer-events-none; }
+.btn-primary { @apply btn bg-iris-600 text-white hover:bg-iris-700 shadow-lift; }
+.btn-ghost { @apply btn bg-white text-ink border border-iris-100 hover:border-iris-300 hover:bg-iris-50; }
+.btn-sky { @apply btn bg-sky-500 text-white hover:bg-sky-600; }
+.label { @apply font-mono text-[11px] uppercase tracking-[.14em] text-iris-500; }
+.h2 { @apply font-display text-3xl md:text-4xl font-extrabold tracking-tight; }
+.preserve-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+@keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: .25 } }
