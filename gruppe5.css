@@ -1,0 +1,634 @@
+/* Gruppe 5: DNS – stilark */
+
+:root {
+    --bg: #0a1930;
+    --bg-2: #0f2547;
+    --card: #132f5a;
+    --line: #1f4a86;
+    --blue: #3b9eff;
+    --blue-2: #6cb8ff;
+    --text: #eaf3ff;
+    --muted: #a9c2e3;
+    --ok: #3ddc97;
+    --bad: #ff6b81;
+    --warn: #ffd166;
+    --radius: 14px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 50% -200px, #14396f 0%, var(--bg) 60%) fixed;
+    color: var(--text);
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 18px;
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+.wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 16px 16px 40px;
+}
+
+/* ---------- Topp og meny ---------- */
+
+.topp {
+    text-align: center;
+    padding: 8px 0 4px;
+}
+
+.topp h1 {
+    margin: 0;
+    font-size: clamp(28px, 6vw, 40px);
+    letter-spacing: 0.5px;
+}
+
+.topp h1 span {
+    color: var(--blue);
+}
+
+.topp p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 16px;
+}
+
+.meny {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 12px 0 20px;
+    padding: 10px;
+    background: rgba(10, 25, 48, 0.92);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.meny button {
+    min-height: 56px;
+    padding: 8px 6px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text);
+    background: var(--bg-2);
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, border-color 0.15s;
+}
+
+.meny button .ikon {
+    display: block;
+    font-size: 22px;
+    line-height: 1.2;
+}
+
+.meny button:hover {
+    border-color: var(--blue);
+}
+
+.meny button.aktiv {
+    background: var(--blue);
+    border-color: var(--blue-2);
+    color: #04132a;
+}
+
+/* ---------- Generelt innhald ---------- */
+
+.visning {
+    display: none;
+    animation: inn 0.3s ease;
+}
+
+.visning.aktiv {
+    display: block;
+}
+
+@keyframes inn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.kort {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+h2 {
+    margin: 0 0 10px;
+    font-size: clamp(24px, 5vw, 32px);
+}
+
+h3 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    color: var(--blue-2);
+}
+
+p {
+    margin: 0 0 12px;
+}
+
+.stor {
+    font-size: 20px;
+}
+
+.merk {
+    color: var(--blue-2);
+    font-weight: 700;
+}
+
+.kode {
+    font-family: Consolas, "Courier New", monospace;
+    background: #061226;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 1px 6px;
+    color: var(--blue-2);
+}
+
+/* ---------- Knappar ---------- */
+
+.knapp {
+    display: inline-block;
+    min-height: 52px;
+    padding: 12px 22px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 18px;
+    color: #04132a;
+    background: var(--blue);
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.15s, opacity 0.15s;
+}
+
+.knapp:hover {
+    background: var(--blue-2);
+}
+
+.knapp:active {
+    transform: scale(0.97);
+}
+
+.knapp.sekundaer {
+    background: transparent;
+    color: var(--text);
+    border: 2px solid var(--blue);
+}
+
+.knapp.sekundaer:hover {
+    background: rgba(59, 158, 255, 0.15);
+}
+
+.knapp:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.knapperad {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+    outline: 3px solid var(--warn);
+    outline-offset: 2px;
+}
+
+/* ---------- Heim ---------- */
+
+.helt {
+    text-align: center;
+    padding: 28px 20px;
+}
+
+.helt .emoji {
+    font-size: 56px;
+    line-height: 1;
+}
+
+.analogi {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
+    margin: 14px 0;
+}
+
+.analogi div {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 8px;
+}
+
+.analogi .pil {
+    background: none;
+    border: 0;
+    font-size: 28px;
+    color: var(--blue);
+    padding: 0;
+}
+
+.snarvegar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.snarvegar .knapp {
+    width: 100%;
+}
+
+/* ---------- Animasjon ---------- */
+
+.scene {
+    position: relative;
+    padding-left: 64px;
+}
+
+.scene::before {
+    content: "";
+    position: absolute;
+    left: 26px;
+    top: 24px;
+    bottom: 24px;
+    width: 4px;
+    background: var(--line);
+    border-radius: 2px;
+}
+
+.node {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--bg-2);
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    opacity: 0.55;
+    transition: opacity 0.3s, border-color 0.3s, background 0.3s, transform 0.3s;
+}
+
+.node .ikon {
+    font-size: 30px;
+}
+
+.node strong {
+    display: block;
+}
+
+.node small {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.node.aktiv {
+    opacity: 1;
+    border-color: var(--blue);
+    background: #17407a;
+    transform: translateX(6px);
+    box-shadow: 0 0 0 4px rgba(59, 158, 255, 0.2);
+}
+
+.pakke {
+    position: absolute;
+    left: 6px;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    font-size: 24px;
+    background: var(--blue);
+    border-radius: 50%;
+    box-shadow: 0 0 14px var(--blue);
+    transition: top 0.7s ease-in-out;
+    z-index: 2;
+}
+
+.snakkeboble {
+    min-height: 84px;
+    margin-top: 6px;
+    padding: 14px 16px;
+    background: #061226;
+    border: 1px solid var(--blue);
+    border-radius: 12px;
+}
+
+.snakkeboble .steg {
+    color: var(--blue-2);
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.framdrift {
+    height: 8px;
+    background: var(--bg-2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 12px;
+}
+
+.framdrift div {
+    height: 100%;
+    width: 0;
+    background: var(--blue);
+    transition: width 0.4s;
+}
+
+/* ---------- DNS-lab ---------- */
+
+.skjema {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.skjema input {
+    flex: 1 1 240px;
+    min-height: 52px;
+    padding: 10px 14px;
+    font: inherit;
+    font-size: 18px;
+    color: var(--text);
+    background: #061226;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+}
+
+.skjema input:focus {
+    border-color: var(--blue);
+}
+
+.eksempel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: center;
+}
+
+.eksempel span {
+    color: var(--muted);
+    font-size: 15px;
+}
+
+.chip {
+    min-height: 44px;
+    padding: 6px 14px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--text);
+    background: var(--bg-2);
+    border: 1px solid var(--blue);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.chip:hover {
+    background: rgba(59, 158, 255, 0.2);
+}
+
+.feil {
+    margin-top: 10px;
+    color: var(--bad);
+    font-weight: 700;
+    min-height: 1.5em;
+}
+
+.logg {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+}
+
+.logg li {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: var(--bg-2);
+    border-left: 4px solid var(--blue);
+    border-radius: 8px;
+    animation: inn 0.3s ease;
+}
+
+.logg li.cache {
+    border-left-color: var(--warn);
+}
+
+.logg li .ikon {
+    font-size: 22px;
+}
+
+.resultat {
+    margin-top: 12px;
+    padding: 16px;
+    text-align: center;
+    background: #061226;
+    border: 2px solid var(--ok);
+    border-radius: 12px;
+    animation: inn 0.4s ease;
+}
+
+.resultat .ip {
+    display: block;
+    margin: 4px 0;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: clamp(26px, 7vw, 38px);
+    font-weight: 700;
+    color: var(--ok);
+}
+
+.resultat small {
+    color: var(--muted);
+}
+
+.merkelapp {
+    display: inline-block;
+    margin: 4px 4px 0;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.merkelapp.cache {
+    border-color: var(--warn);
+    color: var(--warn);
+}
+
+/* ---------- Quiz ---------- */
+
+.quiz-topp {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.spm {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 12px 0;
+}
+
+.svaralt {
+    display: grid;
+    gap: 10px;
+}
+
+.svaralt button {
+    min-height: 56px;
+    padding: 12px 16px;
+    font: inherit;
+    font-size: 18px;
+    text-align: left;
+    color: var(--text);
+    background: var(--bg-2);
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.svaralt button:hover:not(:disabled) {
+    border-color: var(--blue);
+}
+
+.svaralt button:disabled {
+    cursor: default;
+}
+
+.svaralt button.riktig {
+    background: rgba(61, 220, 151, 0.18);
+    border-color: var(--ok);
+}
+
+.svaralt button.feil-val {
+    background: rgba(255, 107, 129, 0.18);
+    border-color: var(--bad);
+}
+
+.tilbakemelding {
+    min-height: 3em;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #061226;
+    border: 1px solid var(--line);
+}
+
+.tilbakemelding.ok {
+    border-color: var(--ok);
+}
+
+.tilbakemelding.nei {
+    border-color: var(--bad);
+}
+
+.sluttpoeng {
+    text-align: center;
+}
+
+.sluttpoeng .tal {
+    font-size: clamp(48px, 14vw, 80px);
+    font-weight: 800;
+    color: var(--blue);
+    line-height: 1.1;
+}
+
+.sluttpoeng .tal small {
+    font-size: 0.4em;
+    color: var(--muted);
+}
+
+.stjerner {
+    font-size: 34px;
+    letter-spacing: 4px;
+}
+
+/* ---------- Bunn ---------- */
+
+footer {
+    margin-top: 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 15px;
+}
+
+footer a {
+    color: var(--blue-2);
+}
+
+/* ---------- Mobil ---------- */
+
+@media (max-width: 560px) {
+    body {
+        font-size: 17px;
+    }
+
+    .meny {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .snarvegar {
+        grid-template-columns: 1fr;
+    }
+
+    .analogi {
+        grid-template-columns: 1fr;
+    }
+
+    .analogi .pil {
+        transform: rotate(90deg);
+    }
+
+    .scene {
+        padding-left: 56px;
+    }
+
+    .knapperad .knapp {
+        flex: 1 1 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
