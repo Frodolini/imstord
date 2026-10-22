@@ -69,7 +69,7 @@
         }
         .skjerm { border-radius: 26px; background: #060a14; padding: 18px 16px 22px; min-height: 430px; position: relative; overflow: hidden; }
         .notch { width: 90px; height: 20px; border-radius: 0 0 14px 14px; background: #0b1220; margin: -18px auto 14px; }
-        .kode { font-size: 40px; font-weight: 800; letter-spacing: 4px; color: var(--green); text-shadow: 0 0 16px rgba(52, 211, 153, 0.6); }
+        .kode { font-size: 40px; font-weight: 800; letter-spacing: 6px; color: var(--green); text-shadow: 0 0 16px rgba(52, 211, 153, 0.6); }
         .kode.blink { animation: blink 0.6s; }
         @keyframes blink { 0% { opacity: 0.2; transform: scale(0.95); } 100% { opacity: 1; transform: none; } }
         .nedtelling { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
@@ -98,23 +98,55 @@
         .alt.rett { background: rgba(52, 211, 153, 0.2); border-color: var(--green); }
         .alt.feil { background: rgba(248, 113, 113, 0.2); border-color: var(--red); }
 
+        /* Logo */
+        .logo-skjold {
+            position: relative; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(167, 139, 250, 0.25));
+            border: 1px solid rgba(34, 211, 238, 0.5); box-shadow: 0 0 22px rgba(34, 211, 238, 0.45);
+        }
+        .logo-skjold i { font-size: 24px; color: var(--cyan); filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.8)); }
+        .logo-tekst {
+            font-size: 28px; font-weight: 900; letter-spacing: 1px; line-height: 1;
+            background: linear-gradient(90deg, #fff, var(--cyan)); -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .topplinje { position: sticky; top: 0; z-index: 40; background: rgba(7, 11, 20, 0.72); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+
+        /* Kode på mobilen: klikkbar for kopiering */
+        .kode-knapp { display: block; width: 100%; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+        .kode-knapp:hover { background: rgba(52, 211, 153, 0.08); }
+
+        /* Eksempelpassord */
+        .eks-pw { padding: 4px 12px; border-radius: 999px; font-size: 13px; cursor: pointer; color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); transition: border-color 0.2s, color 0.2s; }
+        .eks-pw:hover { border-color: var(--cyan); color: #fff; }
+
+        /* Kodefelt-åtvaring */
+        .inp.blokkert { border-color: var(--red); box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25); }
+        .quiz-bar { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+        .quiz-bar > div { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--cyan), var(--purple)); transition: width 0.4s; }
+
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition-duration: 0.01s !important; } }
     </style>
 </head>
 <body class="text-slate-100 leading-relaxed">
 
-<div class="max-w-6xl mx-auto px-4 pb-16">
-
-    <!-- HEADER -->
-    <header class="flex flex-wrap items-center justify-between gap-3 py-5">
-        <div class="font-extrabold tracking-wide text-lg"><i class="fa-solid fa-shield-halved text-cyan-400"></i> Cyber<span class="text-cyan-400">Vakt</span> · Gruppe 3</div>
-        <nav class="flex flex-wrap gap-4 text-sm text-slate-400" aria-label="Snarvegar">
-            <a class="hover:text-cyan-400" href="#passord">Passordtest</a>
-            <a class="hover:text-cyan-400" href="#simulator">2FA-simulator</a>
-            <a class="hover:text-cyan-400" href="#faktorar">Faktorar</a>
-            <a class="hover:text-cyan-400" href="#quiz">Quiz</a>
+<!-- HEADER -->
+<header class="topplinje">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <a href="#top" class="flex items-center gap-3" aria-label="2FA – til toppen av sida">
+            <span class="logo-skjold" aria-hidden="true"><i class="fa-solid fa-shield-halved"></i></span>
+            <span class="logo-tekst">2FA</span>
+        </a>
+        <nav class="flex gap-x-5 text-lg sm:text-sm font-semibold text-slate-400" aria-label="Snarvegar">
+            <a class="hover:text-cyan-400" href="#passord"><i class="fa-solid fa-key"></i><span class="hidden sm:inline"> Passordtest</span><span class="sr-only sm:hidden">Passordtest</span></a>
+            <a class="hover:text-cyan-400" href="#simulator"><i class="fa-solid fa-mobile-screen"></i><span class="hidden sm:inline"> Simulator</span><span class="sr-only sm:hidden">Simulator</span></a>
+            <a class="hover:text-cyan-400" href="#faktorar"><i class="fa-solid fa-layer-group"></i><span class="hidden sm:inline"> Faktorar</span><span class="sr-only sm:hidden">Faktorar</span></a>
+            <a class="hover:text-cyan-400" href="#quiz"><i class="fa-solid fa-trophy"></i><span class="hidden sm:inline"> Quiz</span><span class="sr-only sm:hidden">Quiz</span></a>
         </nav>
-    </header>
+    </div>
+</header>
+
+<div class="max-w-6xl mx-auto px-4 pb-16" id="top">
 
     <!-- HERO -->
     <section class="text-center py-10">
@@ -128,7 +160,7 @@
     </section>
 
     <!-- PASSORDSTYRKE -->
-    <section id="passord" class="mt-10 scroll-mt-4">
+    <section id="passord" class="mt-10 scroll-mt-24">
         <h2 class="text-3xl font-bold mb-1"><i class="fa-solid fa-key text-cyan-400"></i> Passordtest og «tid til hacking»</h2>
         <p class="text-slate-400 mb-5">Skriv eit passord og sjå kor lang tid det tek å knekke det. Passordet blir ikkje sendt nokon stad. Alt skjer i nettlesaren din.</p>
 
@@ -138,6 +170,14 @@
                 <div class="flex gap-2">
                     <input id="pwInn" class="inp mono" type="password" autocomplete="off" spellcheck="false" placeholder="Skriv her …" maxlength="100">
                     <button type="button" id="pwVis" class="btn sek" aria-label="Vis eller skjul passord"><i class="fa-solid fa-eye"></i></button>
+                </div>
+
+                <div class="mt-3 flex flex-wrap gap-2 items-center text-sm text-slate-400">
+                    <span>Prøv:</span>
+                    <button type="button" class="eks-pw mono" data-pw="123456">123456</button>
+                    <button type="button" class="eks-pw mono" data-pw="Sommer2026">Sommer2026</button>
+                    <button type="button" class="eks-pw mono" data-pw="K4tt!Hund">K4tt!Hund</button>
+                    <button type="button" class="eks-pw mono" data-pw="Lilla-Tog-Snur-Fjell!93">Lilla-Tog-Snur-Fjell!93</button>
                 </div>
 
                 <div class="mt-5 flex justify-between items-baseline">
@@ -175,9 +215,9 @@
     </section>
 
     <!-- 2FA SIMULATOR -->
-    <section id="simulator" class="mt-16 scroll-mt-4">
+    <section id="simulator" class="mt-16 scroll-mt-24">
         <h2 class="text-3xl font-bold mb-1"><i class="fa-solid fa-mobile-screen text-green-400"></i> 2FA-simulator</h2>
-        <p class="text-slate-400 mb-5">Logg inn på den falske banken «SikkerBank». Du treng både passordet og koden frå mobilen. Koden byter kvart 30. sekund.</p>
+        <p class="text-slate-400 mb-5">Logg inn på den falske banken «SikkerBank». Du treng både passordet og koden frå mobilen. Koden byter kvart 30. sekund og består berre av seks tal.</p>
 
         <div class="grid md:grid-cols-2 gap-6 items-start">
             <!-- Telefon -->
@@ -188,7 +228,10 @@
                     <div class="mt-6 p-4 rounded-2xl border border-white/10 bg-white/5">
                         <div class="text-xs text-slate-400">SikkerBank</div>
                         <div class="text-sm font-semibold">elev@sikkerbank.no</div>
-                        <div class="kode mono mt-3 text-center" id="telKode" aria-label="Gjeldande engangskode">000 000</div>
+                        <button type="button" class="kode-knapp mt-3" id="telKodeKnapp" title="Trykk for å kopiere koden">
+                            <span class="kode mono block text-center" id="telKode" aria-label="Gjeldande engangskode">000000</span>
+                            <span class="block text-center text-xs text-slate-500" id="telKopiert"><i class="fa-regular fa-copy"></i> Trykk for å kopiere</span>
+                        </button>
                         <div class="nedtelling mt-3"><div id="telBar"></div></div>
                         <div class="mt-2 text-xs text-slate-400 flex justify-between"><span>Ny kode om</span><span id="telSek" class="mono">30 s</span></div>
                     </div>
@@ -215,7 +258,8 @@
                     <p class="text-sm text-slate-400 mb-4">Passordet var rett. Skriv inn den 6-sifra koden frå Authenticator-appen.</p>
                     <form id="form2" autocomplete="off" novalidate>
                         <label for="kodeInn" class="block text-sm font-semibold mb-1">Engangskode</label>
-                        <input id="kodeInn" class="inp mono mb-4 text-center text-2xl tracking-widest" type="text" inputmode="numeric" maxlength="7" placeholder="000 000">
+                        <input id="kodeInn" class="inp mono text-center text-2xl tracking-[0.4em]" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="000000" aria-describedby="kodeHjelp">
+                        <p id="kodeHjelp" class="text-xs text-slate-400 mt-1 mb-4 min-h-[1rem]">Berre tal (0–9), seks siffer.</p>
                         <button type="submit" class="btn w-full"><i class="fa-solid fa-check"></i> Stadfest</button>
                     </form>
                     <button type="button" id="tilbakeSteg1" class="btn sek w-full mt-3">← Tilbake</button>
@@ -234,7 +278,7 @@
     </section>
 
     <!-- FAKTORAR -->
-    <section id="faktorar" class="mt-16 scroll-mt-4">
+    <section id="faktorar" class="mt-16 scroll-mt-24">
         <h2 class="text-3xl font-bold mb-1"><i class="fa-solid fa-layer-group text-purple-400"></i> Dei tre faktorane</h2>
         <p class="text-slate-400 mb-5">Trykk på eit kort for å lese meir. 2FA betyr at du brukar <strong>minst to</strong> ulike typar.</p>
         <div class="grid md:grid-cols-3 gap-5 items-start">
@@ -269,9 +313,9 @@
     </section>
 
     <!-- QUIZ -->
-    <section id="quiz" class="mt-16 scroll-mt-4">
+    <section id="quiz" class="mt-16 scroll-mt-24">
         <h2 class="text-3xl font-bold mb-1"><i class="fa-solid fa-trophy text-yellow-400"></i> Mini-quiz</h2>
-        <p class="text-slate-400 mb-5">Tre spørsmål om 2FA. Du får svar med ein gong.</p>
+        <p class="text-slate-400 mb-5">Fem spørsmål om 2FA og nettryggleik. Du ser med ein gong om svaret er rett.</p>
         <div class="glass p-6 max-w-3xl" id="quizKort"></div>
     </section>
 
@@ -426,6 +470,12 @@
         $("pwVis").firstChild.className = "fa-solid " + (vis ? "fa-eye-slash" : "fa-eye");
         inn.focus();
     });
+    Array.prototype.forEach.call(document.querySelectorAll(".eks-pw"), function (b) {
+        b.addEventListener("click", function () {
+            $("pwInn").value = b.getAttribute("data-pw");
+            oppdaterPassord();
+        });
+    });
     oppdaterPassord();
 
     /* =====================================================
@@ -439,16 +489,16 @@
         var s = "2FA-DEMO-HEMMELEG-" + teljar;
         var h = 2166136261;
         for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
-        h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b) >>> 0;
-        h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35) >>> 0;
-        h ^= h >>> 16;
+        /* «>>> 0» held talet positivt. Utan det kan koden få minusteikn (bindestrek). */
+        h = Math.imul((h ^ (h >>> 16)) >>> 0, 0x85ebca6b) >>> 0;
+        h = Math.imul((h ^ (h >>> 13)) >>> 0, 0xc2b2ae35) >>> 0;
+        h = (h ^ (h >>> 16)) >>> 0;
         var k = String(h % 1000000);
         while (k.length < 6) { k = "0" + k; }
         return k;
     }
 
     function teljarNo() { return Math.floor(Date.now() / PERIODE); }
-    function formaterKode(k) { return k.slice(0, 3) + " " + k.slice(3); }
 
     var sistTeljar = -1;
     function tikk() {
@@ -458,7 +508,7 @@
         if (t !== sistTeljar) {
             sistTeljar = t;
             var kodeEl = $("telKode");
-            kodeEl.textContent = formaterKode(kodeFor(t));
+            kodeEl.textContent = kodeFor(t); // berre seks tal, utan mellomrom eller bindestrek
             kodeEl.classList.remove("blink");
             void kodeEl.offsetWidth;
             kodeEl.classList.add("blink");
@@ -506,15 +556,62 @@
         $("kodeInn").focus();
     });
 
+    /* Kodefeltet tek berre imot tal. Bindestrek, mellomrom og bokstavar blir stoppa. */
+    var blokkTimer = null;
+    function visBlokkert(teikn) {
+        var inn = $("kodeInn");
+        var vis = teikn === " " ? "mellomrom" : teikn === "-" ? "bindestrek (-)" : "«" + teikn + "»";
+        $("kodeHjelp").textContent = "Berre tal er lov – " + vis + " blir ikkje teke med.";
+        $("kodeHjelp").style.color = "#f87171";
+        inn.classList.add("blokkert");
+        clearTimeout(blokkTimer);
+        blokkTimer = setTimeout(function () {
+            inn.classList.remove("blokkert");
+            $("kodeHjelp").textContent = "Berre tal (0–9), seks siffer.";
+            $("kodeHjelp").style.color = "";
+        }, 1600);
+    }
+    $("kodeInn").addEventListener("keydown", function (e) {
+        if (e.ctrlKey || e.metaKey || e.altKey) { return; }
+        if (e.key.length === 1 && !/[0-9]/.test(e.key)) { e.preventDefault(); visBlokkert(e.key); }
+    });
+    $("kodeInn").addEventListener("beforeinput", function (e) {
+        if (e.data && /[^0-9]/.test(e.data) && e.inputType !== "insertFromPaste") {
+            e.preventDefault();
+            visBlokkert(e.data.replace(/[0-9]/g, "").charAt(0));
+        }
+    });
+    $("kodeInn").addEventListener("paste", function (e) {
+        var tekst = (e.clipboardData || window.clipboardData).getData("text") || "";
+        e.preventDefault();
+        var rein = tekst.replace(/\D/g, "");
+        if (rein !== tekst.trim()) { visBlokkert(tekst.replace(/[0-9\s]/g, "").charAt(0) || " "); }
+        var inn = $("kodeInn");
+        inn.value = (inn.value.slice(0, inn.selectionStart) + rein + inn.value.slice(inn.selectionEnd)).replace(/\D/g, "").slice(0, 6);
+    });
     $("kodeInn").addEventListener("input", function () {
-        var v = $("kodeInn").value.replace(/\D/g, "").slice(0, 6);
-        $("kodeInn").value = v.length > 3 ? v.slice(0, 3) + " " + v.slice(3) : v;
+        /* Siste tryggleiksnett, til dømes for autofyll: fjern alt som ikkje er tal */
+        var inn = $("kodeInn");
+        var rein = inn.value.replace(/\D/g, "").slice(0, 6);
+        if (rein !== inn.value) { inn.value = rein; }
+    });
+
+    /* Trykk på koden i mobilen for å kopiere han */
+    $("telKodeKnapp").addEventListener("click", function () {
+        var kode = $("telKode").textContent;
+        function ferdig(ok) {
+            $("telKopiert").innerHTML = ok ? '<i class="fa-solid fa-check"></i> Kopiert!' : "Kunne ikkje kopiere";
+            setTimeout(function () { $("telKopiert").innerHTML = '<i class="fa-regular fa-copy"></i> Trykk for å kopiere'; }, 1500);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(kode).then(function () { ferdig(true); }, function () { ferdig(false); });
+        } else { ferdig(false); }
     });
 
     $("form2").addEventListener("submit", function (e) {
         e.preventDefault();
-        var kode = $("kodeInn").value.replace(/\D/g, "");
-        if (kode.length !== 6) { melding("Koden må ha 6 siffer.", "feil"); rist(); return; }
+        var kode = $("kodeInn").value;
+        if (!/^[0-9]{6}$/.test(kode)) { melding("Koden må vere nøyaktig 6 siffer, berre tal.", "feil"); rist(); return; }
         var t = teljarNo();
         if (kode === kodeFor(t) || kode === kodeFor(t - 1)) {
             visSteg(3);
@@ -553,7 +650,11 @@
         { q: "Kva av dette er «noko du har»?", a: ["Passordet ditt", "Fingeravtrykket ditt", "Ein YubiKey eller mobilen din"], r: 2,
           f: "Ein fysisk ting som mobil eller YubiKey er «noko du har». Passord er «noko du veit», og fingeravtrykk er «noko du er»." },
         { q: "Passordet ditt lekkar i eit datainnbrot. Kva beskyttar deg best?", a: ["At passordet er langt", "2FA slått på på kontoen", "At du bruker same passord overalt"], r: 1,
-          f: "Med 2FA treng ein angriper også koden frå mobilen din, så eit lekt passord åleine hjelper han ikkje." }
+          f: "Med 2FA treng ein angriper også koden frå mobilen din, så eit lekt passord åleine hjelper han ikkje." },
+        { q: "Kva gjer passordet ditt vanskelegast å knekke?", a: ["At det er langt, til dømes ei setning med fleire ord", "At det er namnet på kjæledyret ditt", "At det berre har tal"], r: 0,
+          f: "Lengd hjelper mest. Kvart ekstra teikn gjer at det tek mange gonger lenger tid å prøve alle kombinasjonar." },
+        { q: "Du får ein SMS med ein 2FA-kode du ikkje har bede om. Kva bør du gjere?", a: ["Sende koden til den som spør etter han", "Ikkje dele koden, og byte passordet på kontoen", "Ignorere det, det betyr ingenting"], r: 1,
+          f: "Ein kode du ikkje bad om, betyr at nokon har passordet ditt og prøver å logge inn. Del aldri koden, og byt passordet med ein gong." }
     ];
     var qz = { nr: 0, poeng: 0, svart: false };
     var kort = $("quizKort");
@@ -569,6 +670,11 @@
         var poeng = el("span", "", "Poeng: " + qz.poeng);
         topp.appendChild(poeng);
         kort.appendChild(topp);
+        var bar = el("div", "quiz-bar mb-5");
+        var fyll = el("div");
+        fyll.style.width = (qz.nr / SPM.length * 100) + "%";
+        bar.appendChild(fyll);
+        kort.appendChild(bar);
         kort.appendChild(el("h3", "text-xl font-bold mb-4", s.q));
 
         var liste = el("div", "grid gap-3");
@@ -592,6 +698,7 @@
                 if (!rett) { b.classList.add("feil"); }
                 fb.style.borderColor = rett ? "#34d399" : "#f87171";
                 fb.textContent = (rett ? "✅ Rett! " : "❌ Feil. ") + s.f;
+                fyll.style.width = ((qz.nr + 1) / SPM.length * 100) + "%";
                 poeng.textContent = "Poeng: " + qz.poeng;
                 neste.disabled = false;
                 neste.style.opacity = "1";
