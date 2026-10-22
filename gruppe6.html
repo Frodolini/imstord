@@ -1,49 +1,91 @@
 <!DOCTYPE html>
 <!--
-    Gruppe 6 – Lær PowerShell
-    Struktur:
+    Gruppe 6 – Lær PowerShell (versjon 2)
+    Filer:
       gruppe6.html : innhald og struktur (denne fila)
       style.css    : design, fargar, animasjonar og responsivt oppsett
-      script.js    : terminalen, quizen, poeng og framdrift (lagra i localStorage)
+      script.js    : nivå, terminal, oppgåver, quiz og lagring (localStorage)
 -->
-<html lang="nn" data-tema="dark">
+<html lang="nn" data-tema="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0f1222">
+    <meta name="theme-color" content="#f4f8ff">
+    <meta name="description" content="Lær PowerShell i fem nivå, øv i ein simulert terminal og test deg sjølv i quizen.">
     <title>Gruppe 6 – Lær PowerShell</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script>
+        /* Set lagra tema før sida blir teikna, så ho ikkje blinkar */
+        (function () {
+            try {
+                var o = JSON.parse(localStorage.getItem("gruppe6-framgang-v2") || "{}");
+                if (o.tema === "dark") { document.documentElement.setAttribute("data-tema", "dark"); }
+            } catch (e) { /* ignorer */ }
+        })();
+    </script>
 </head>
 <body>
 
-<a class="hopp" href="#hovud">Hopp til innhald</a>
+<!-- ============ IKON (SVG-sprite) ============ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="i-heim" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h5v-6h4v6h5V9.5"/></symbol>
+    <symbol id="i-bok" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/><path d="M8 7h7"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="3"/><path d="m7 10 3 2.5L7 15"/><path d="M12.5 15H17"/></symbol>
+    <symbol id="i-pokal" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4"/><path d="M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4"/><path d="M8 21h8"/><path d="M9.5 17h5v4h-5z"/></symbol>
+    <symbol id="i-stjerne" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
+    <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-maane" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+    <symbol id="i-spel" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+    <symbol id="i-hake" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-kryss" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-lyspære" viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-oppatt" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.7"/><path d="M4 4v4h4"/></symbol>
+    <symbol id="i-soppel" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></symbol>
+    <symbol id="i-pil-h" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+    <symbol id="i-pil-v" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></symbol>
+    <symbol id="i-mal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+    <symbol id="i-mappe" viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/></symbol>
+    <symbol id="i-fil" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 17h6"/></symbol>
+    <symbol id="i-boks" viewBox="0 0 24 24"><path d="M3 8 12 3l9 5v8l-9 5-9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></symbol>
+    <symbol id="i-rakett" viewBox="0 0 24 24"><path d="M5 15c-1.5 1-2 4-2 6 2 0 5-.5 6-2"/><path d="M9 15 6 12c2-5 6-9 13-9 0 7-4 11-9 13z"/><circle cx="14.5" cy="9.5" r="1.5"/></symbol>
+    <symbol id="i-verktoy" viewBox="0 0 24 24"><path d="M14.5 6.5a4 4 0 0 0 5 5L12 19a2.1 2.1 0 0 1-3-3l7.5-7.5"/><path d="M14.5 6.5 17 4l3 3-2.5 2.5"/></symbol>
+    <symbol id="i-kopi" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
+    <symbol id="i-flamme" viewBox="0 0 24 24"><path d="M12 21a6 6 0 0 0 6-6c0-4-3-6-4-10-2 2-3 4-3 6-1-1-1.5-2-1.5-3C7 10 6 12.5 6 15a6 6 0 0 0 6 6z"/></symbol>
+</svg>
+
+<a class="hopp" href="#hovud">Hopp til innhaldet</a>
 
 <!-- ============ TOPPFELT ============ -->
 <header class="topp">
     <div class="topp-inn">
-        <div class="tittel-blokk">
-            <h1 class="sidetittel">Gruppe 6</h1>
-            <span class="undertittel">Lær PowerShell</span>
-        </div>
+        <a class="logo" href="#heim" data-gaa="heim">
+            <span class="logo-merke" aria-hidden="true">&gt;_</span>
+            <span class="logo-tekst">Lær <b>PowerShell</b></span>
+        </a>
+
+        <nav class="meny" aria-label="Hovudmeny">
+            <button type="button" data-visning="heim" class="aktiv"><svg class="ik"><use href="#i-heim"/></svg><span>Heim</span></button>
+            <button type="button" data-visning="laer"><svg class="ik"><use href="#i-bok"/></svg><span>Lær</span></button>
+            <button type="button" data-visning="terminal"><svg class="ik"><use href="#i-terminal"/></svg><span>Terminal</span></button>
+            <button type="button" data-visning="quiz"><svg class="ik"><use href="#i-pokal"/></svg><span>Quiz</span></button>
+        </nav>
 
         <div class="verktoy">
-            <div class="badge" title="Poengsum"><span aria-hidden="true">⭐</span> <span id="poengVis">0</span> poeng</div>
-            <button type="button" id="temaKnapp" class="ikonknapp" aria-pressed="false" aria-label="Byt mellom lys og mørk modus">
-                <span id="temaIkon" aria-hidden="true">🌙</span><span class="berre-pc" id="temaTekst">Mørk</span>
+            <div class="poengmerke" title="Poengsummen din">
+                <svg class="ik"><use href="#i-stjerne"/></svg>
+                <span id="poengVis">0</span><span class="berre-pc">&nbsp;poeng</span>
+            </div>
+            <button type="button" id="temaKnapp" class="ikonknapp" aria-pressed="false" aria-label="Byt til mørk modus">
+                <svg class="ik" id="temaIkon"><use href="#i-maane"/></svg>
             </button>
         </div>
     </div>
-
-    <nav class="meny" aria-label="Hovudmeny">
-        <button type="button" data-visning="heim" class="aktiv">🏠 Heim</button>
-        <button type="button" data-visning="laer">📚 Lær PowerShell</button>
-        <button type="button" data-visning="terminal">⌨️ Terminal og oppgåver</button>
-        <button type="button" data-visning="quiz">🏆 Quiz</button>
-    </nav>
-
-    <div class="framdrift-rad" aria-live="polite">
-        <div class="framdrift" role="progressbar" aria-label="Framdrift i kurset" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="framdriftRot"><div id="framdriftBar"></div></div>
-        <span id="framdriftTekst">0 % fullført</span>
+    <div class="framdrift-rad">
+        <div class="framdrift" role="progressbar" aria-label="Framdrift i heile kurset" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="framdriftRot"><div id="framdriftBar"></div></div>
+        <span id="framdriftTekst">0 %</span>
     </div>
 </header>
 
@@ -52,69 +94,95 @@
     <!-- ============ HEIM ============ -->
     <section id="heim" class="visning aktiv" aria-labelledby="heimTittel">
         <div class="hero">
-            <div class="hero-terminal" aria-hidden="true">
-                <div class="vindaugsrad"><span class="prikk r"></span><span class="prikk g"></span><span class="prikk b"></span><span class="vindaugsnamn">PowerShell</span></div>
-                <pre class="hero-kode"><span class="p">PS C:\Brukarar\Elev&gt;</span> <span class="k">Write-Host</span> <span class="s">"Hei, verda!"</span>
-Hei, verda!
-<span class="p">PS C:\Brukarar\Elev&gt;</span> <span class="k">Get-Date</span>
-<span class="blink">▌</span></pre>
-            </div>
             <div class="hero-tekst">
-                <h2 id="heimTittel">Snakk med datamaskina!</h2>
-                <p class="stor">PowerShell er eit program der du <strong>skriv kommandoar</strong> i staden for å klikke med musa. Du seier kva datamaskina skal gjere, og ho gjer det.</p>
+                <span class="merkelapp">Gruppe 6 · For ungdomsskulen</span>
+                <h1 id="heimTittel">Snakk med <span class="grad">datamaskina</span></h1>
+                <p class="ingress">I PowerShell <strong>skriv</strong> du kva datamaskina skal gjere, i staden for å klikke. Lær det i fem korte nivå.</p>
                 <div class="knapperad">
-                    <button type="button" class="knapp" data-gaa="laer">▶ Start kurset</button>
-                    <button type="button" class="knapp sek" data-gaa="terminal">⌨️ Prøv terminalen</button>
+                    <button type="button" class="knapp" id="fortsetKnapp"><svg class="ik"><use href="#i-spel"/></svg><span>Start kurset</span></button>
+                    <button type="button" class="knapp sek" data-gaa="terminal"><svg class="ik"><use href="#i-terminal"/></svg><span>Prøv terminalen</span></button>
                 </div>
             </div>
+            <div class="hero-terminal" aria-hidden="true">
+                <div class="vindaugsrad"><span class="prikk r"></span><span class="prikk g"></span><span class="prikk b"></span><span class="vindaugsnamn">PowerShell</span></div>
+                <pre class="hero-kode" id="heroKode"></pre>
+            </div>
         </div>
 
-        <div class="rutenett">
-            <article class="kort">
-                <span class="ikon" aria-hidden="true">💡</span>
-                <h3>Kva er PowerShell?</h3>
-                <p>Eit verktøy frå Microsoft som styrer Windows med tekst. Det er også eit <strong>skriptspråk</strong>: du kan skrive fleire kommandoar i ei fil og køyre dei på nytt kva gong du vil.</p>
+        <div class="rutenett tre">
+            <article class="kort info-kort">
+                <span class="ikonboks bla"><svg class="ik"><use href="#i-lyspære"/></svg></span>
+                <h3>Kva er det?</h3>
+                <p>Eit program frå Microsoft der du styrer Windows med tekst-kommandoar.</p>
             </article>
-            <article class="kort">
-                <span class="ikon" aria-hidden="true">🛠️</span>
+            <article class="kort info-kort">
+                <span class="ikonboks turkis"><svg class="ik"><use href="#i-verktoy"/></svg></span>
                 <h3>Kva brukar ein det til?</h3>
-                <p>Å finne filer, lage mapper, sjå kva som køyrer på maskina, og å gjere kjedelege oppgåver automatisk. IT-folk brukar det kvar dag for å styre mange maskinar samtidig.</p>
+                <p>Finne filer, lage mapper og gjere kjedelege oppgåver automatisk.</p>
             </article>
-            <article class="kort">
-                <span class="ikon" aria-hidden="true">🚀</span>
+            <article class="kort info-kort">
+                <span class="ikonboks lilla"><svg class="ik"><use href="#i-rakett"/></svg></span>
                 <h3>Kvifor lære det?</h3>
-                <p>Du lærer å tenke som ein programmerar, og du blir raskare på datamaskina. Det er ein flott start om du vil jobbe med IT.</p>
+                <p>IT-folk brukar det kvar dag. Du lærer å tenke som ein programmerar.</p>
             </article>
         </div>
 
-        <div class="kort kursoversikt">
-            <h3>Slik fungerer kurset</h3>
-            <ol class="steg">
-                <li><strong>Les</strong> dei 5 nivåa under «Lær PowerShell». <span class="muted">(+10 poeng per nivå)</span></li>
-                <li><strong>Øv</strong> i den simulerte terminalen og løys 5 oppgåver. <span class="muted">(+20 poeng per oppgåve)</span></li>
-                <li><strong>Test deg</strong> i quizen med 11 spørsmål. <span class="muted">(+10 poeng per rette svar)</span></li>
-            </ol>
-            <p class="muted">Framgangen din blir lagra i nettlesaren, så han er der når du kjem tilbake.</p>
+        <div class="kort framgang-kort">
+            <div class="framgang-topp">
+                <h2>Din framgang</h2>
+                <span class="muted liten">Lagra i nettlesaren din</span>
+            </div>
+            <div class="framgang-rader">
+                <button type="button" class="framgang-rad" data-gaa="laer">
+                    <span class="ikonboks bla liten"><svg class="ik"><use href="#i-bok"/></svg></span>
+                    <span class="fr-tekst"><b>1. Lær</b><small>5 nivå · 10 poeng kvar</small></span>
+                    <span class="fr-bar"><span id="frNivaa"></span></span>
+                    <span class="fr-tal" id="frNivaaTal">0/5</span>
+                </button>
+                <button type="button" class="framgang-rad" data-gaa="terminal">
+                    <span class="ikonboks turkis liten"><svg class="ik"><use href="#i-terminal"/></svg></span>
+                    <span class="fr-tekst"><b>2. Øv</b><small>5 oppgåver · 20 poeng kvar</small></span>
+                    <span class="fr-bar"><span id="frOppg"></span></span>
+                    <span class="fr-tal" id="frOppgTal">0/5</span>
+                </button>
+                <button type="button" class="framgang-rad" data-gaa="quiz">
+                    <span class="ikonboks lilla liten"><svg class="ik"><use href="#i-pokal"/></svg></span>
+                    <span class="fr-tekst"><b>3. Test deg</b><small>11 spørsmål · 10 poeng kvar</small></span>
+                    <span class="fr-bar"><span id="frQuiz"></span></span>
+                    <span class="fr-tal" id="frQuizTal">0/11</span>
+                </button>
+            </div>
         </div>
     </section>
 
     <!-- ============ LÆR ============ -->
     <section id="laer" class="visning" aria-labelledby="laerTittel">
-        <h2 id="laerTittel">📚 Lær PowerShell</h2>
-        <p class="muted">Fem nivå. Trykk «Prøv i terminalen» for å teste ei kommando sjølv, og «Marker som fullført» når du er ferdig med nivået.</p>
-        <div id="nivaaListe" class="nivaaliste"></div>
+        <div class="seksjonstopp">
+            <h2 id="laerTittel">Lær PowerShell</h2>
+            <p class="muted">Fem nivå. Les, prøv kommandoen, og svar på den raske sjekken for å fullføre nivået.</p>
+        </div>
+
+        <div class="laer-oppsett">
+            <nav class="nivaa-stegar" aria-label="Nivå">
+                <ol id="nivaaStegar"></ol>
+            </nav>
+            <div id="nivaaVisning" class="nivaa-visning" aria-live="polite"></div>
+        </div>
     </section>
 
     <!-- ============ TERMINAL OG OPPGÅVER ============ -->
     <section id="terminal" class="visning" aria-labelledby="termTittel">
-        <h2 id="termTittel">⌨️ Terminal og oppgåver</h2>
-        <p class="muted">Dette er ein <strong>simulert</strong> terminal. Han køyrer ikkje ekte kommandoar og kan ikkje øydelegge noko på maskina di. Trykk ↑ og ↓ for å bruke tidlegare kommandoar.</p>
+        <div class="seksjonstopp">
+            <h2 id="termTittel">Terminal og oppgåver</h2>
+            <p class="muted">Ein <strong>trygg, simulert</strong> terminal. Han kan ikkje endre noko på maskina di. Tips: <kbd>Tab</kbd> fullfører kommandoar, <kbd>↑</kbd> <kbd>↓</kbd> hentar tidlegare.</p>
+        </div>
 
         <div class="terminal-rutenett">
             <div class="term-boks">
                 <div class="vindaugsrad">
                     <span class="prikk r"></span><span class="prikk g"></span><span class="prikk b"></span>
                     <span class="vindaugsnamn">Windows PowerShell (simulert)</span>
+                    <button type="button" class="vindaug-knapp" id="termNull" title="Nullstill terminalen"><svg class="ik"><use href="#i-oppatt"/></svg><span>Nullstill</span></button>
                 </div>
                 <div class="term" id="term" aria-label="PowerShell-terminal">
                     <div class="term-ut" id="termUt" role="log" aria-live="polite"></div>
@@ -123,8 +191,8 @@ Hei, verda!
                         <input type="text" id="termInn" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-describedby="termTips">
                     </form>
                 </div>
-                <div class="term-knappar">
-                    <span id="termTips" class="muted liten">Skriv ei kommando og trykk Enter.</span>
+                <div class="term-under">
+                    <span id="termTips" class="muted liten">Trykk på ein kommando for å fylle han inn:</span>
                     <div class="chips" aria-label="Døme på kommandoar">
                         <button type="button" class="chip" data-kmd="Get-Date">Get-Date</button>
                         <button type="button" class="chip" data-kmd="Get-Location">Get-Location</button>
@@ -132,13 +200,17 @@ Hei, verda!
                         <button type="button" class="chip" data-kmd="Get-Help">Get-Help</button>
                         <button type="button" class="chip" data-kmd="Get-Command">Get-Command</button>
                     </div>
-                    <button type="button" class="knapp sek liten-knapp" id="termNull">↺ Nullstill terminalen</button>
                 </div>
             </div>
 
             <aside class="kort oppgaver" aria-labelledby="oppgTittel">
-                <h3 id="oppgTittel">🎯 Oppgåver</h3>
-                <p class="muted liten">Løys oppgåvene i terminalen. Du får poeng for kvar!</p>
+                <div class="oppg-hovud">
+                    <span class="ikonboks turkis liten"><svg class="ik"><use href="#i-mal"/></svg></span>
+                    <div>
+                        <h3 id="oppgTittel">Oppgåver</h3>
+                        <span class="muted liten" id="oppgStatus">0 av 5 løyste</span>
+                    </div>
+                </div>
                 <ol id="oppgListe" class="oppgliste"></ol>
             </aside>
         </div>
@@ -146,18 +218,21 @@ Hei, verda!
 
     <!-- ============ QUIZ ============ -->
     <section id="quiz" class="visning" aria-labelledby="quizTittel">
-        <h2 id="quizTittel">🏆 Quiz</h2>
-        <div class="kort" id="quizKort"></div>
+        <div class="seksjonstopp">
+            <h2 id="quizTittel">Quiz</h2>
+            <p class="muted">Vel eit svar (du kan byte), og trykk «Sjekk svar». 10 poeng for kvart nytt rett svar.</p>
+        </div>
+        <div class="kort quiz-kort" id="quizKort"></div>
     </section>
 
 </main>
 
 <footer class="bunn">
-    <button type="button" class="knapp sek liten-knapp" id="nullAlt">🗑️ Nullstill all framgang</button>
+    <button type="button" class="knapp sek liten-knapp" id="nullAlt"><svg class="ik"><use href="#i-soppel"/></svg><span>Nullstill all framgang</span></button>
     <p><a href="index.html">← Tilbake til VM i PROMPTING26</a></p>
 </footer>
 
-<!-- Meldingar om poeng (blir viste kort) -->
+<!-- Kort melding, til dømes «+10 poeng» -->
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script src="script.js"></script>

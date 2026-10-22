@@ -1,14 +1,14 @@
 /* =========================================================
-   Gruppe 6 – Lær PowerShell  |  script.js
+   Gruppe 6 – Lær PowerShell (versjon 2)  |  script.js
    Innhald:
      1. Hjelpefunksjonar
      2. Data: nivå, oppgåver og quiz-spørsmål
      3. Framgang og poeng (lagra i localStorage)
-     4. Navigasjon og lys/mørk modus
-     5. Nivåvisinga («Lær PowerShell»)
+     4. Navigasjon, tema og heimesida
+     5. Nivåa («Lær PowerShell») med rask sjekk
      6. Den simulerte terminalen (filsystem, kommandoar, uttrykk)
-     7. Oppgåvene
-     8. Quizen
+     7. Oppgåvene (med hint i to steg)
+     8. Quizen (vel, byt og sjekk svar)
      9. Oppstart
    Terminalen er ei SIMULERING. Han køyrer aldri ekte kommandoar.
    ========================================================= */
@@ -20,6 +20,8 @@
        ===================================================== */
     var $ = function (id) { return document.getElementById(id); };
     var $$ = function (sel, rot) { return Array.prototype.slice.call((rot || document).querySelectorAll(sel)); };
+    var SVGNS = "http://www.w3.org/2000/svg";
+    var roleg = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     /** Lagar eit HTML-element med klasse og tekst (textContent er trygt mot XSS). */
     function el(tag, klasse, tekst) {
@@ -27,6 +29,26 @@
         if (klasse) { e.className = klasse; }
         if (tekst !== undefined) { e.textContent = tekst; }
         return e;
+    }
+
+    /** Lagar eit ikon frå SVG-spriten i HTML-fila, til dømes ikon("i-hake"). */
+    function ikon(id) {
+        var s = document.createElementNS(SVGNS, "svg");
+        s.setAttribute("class", "ik");
+        s.setAttribute("aria-hidden", "true");
+        var u = document.createElementNS(SVGNS, "use");
+        u.setAttribute("href", "#" + id);
+        s.appendChild(u);
+        return s;
+    }
+
+    /** Knapp med ikon og tekst. */
+    function knapp(klasse, ikonId, tekst) {
+        var b = el("button", klasse);
+        b.type = "button";
+        if (ikonId) { b.appendChild(ikon(ikonId)); }
+        b.appendChild(el("span", "", tekst));
+        return b;
     }
 
     /** Stokkar ei liste tilfeldig (Fisher-Yates). */
@@ -39,105 +61,144 @@
         return a;
     }
 
-    /** Liten melding nede på skjermen, til dømes «+10 poeng». */
+    /** Kort melding nede på skjermen, til dømes «+10 poeng». */
     var toastTimer = null;
-    function toast(tekst) {
+    function toast(tekst, ikonId) {
         var t = $("toast");
-        t.textContent = tekst;
+        t.textContent = "";
+        t.appendChild(ikon(ikonId || "i-stjerne"));
+        t.appendChild(el("span", "", tekst));
         t.classList.add("vis");
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(function () { t.classList.remove("vis"); }, 2200);
+        toastTimer = setTimeout(function () { t.classList.remove("vis"); }, 2400);
+    }
+
+    /** Litt konfetti når eleven gjer det bra. */
+    function konfetti(tal) {
+        if (roleg) { return; }
+        var fargar = ["#3b82f6", "#0fb5ae", "#8b5cf6", "#ec4899", "#fbbf24", "#5eead4"];
+        for (var i = 0; i < (tal || 70); i++) {
+            var c = el("span", "konfetti");
+            c.style.left = (Math.random() * 100) + "vw";
+            c.style.background = fargar[i % fargar.length];
+            c.style.animationDuration = (2 + Math.random() * 2) + "s";
+            c.style.animationDelay = (Math.random() * 0.5) + "s";
+            document.body.appendChild(c);
+            (function (e) { setTimeout(function () { e.remove(); }, 4800); })(c);
+        }
     }
 
     /* =====================================================
        2. Data
        ===================================================== */
 
-    /* Kvart nivå har tittel, tekst og eksempel (kode + forklaring + kommando til terminalen) */
+    /*
+      Kvart nivå har:
+        intro : kort forklaring (1–2 setningar)
+        hugs  : huskeregel
+        eks   : eksempel (kode, kort forklaring, kommando som kan prøvast i terminalen)
+        sjekk : eit raskt spørsmål som må svarast rett før nivået kan fullførast
+    */
     var NIVAA = [
         {
-            tittel: "Kva er PowerShell?",
-            tekst: "PowerShell er eit program frå Microsoft der du styrer datamaskina med tekst. Du skriv ei kommando, trykker Enter, og får svar. Kommandoane i PowerShell heiter <strong>cmdlets</strong> (les: «kommandolett»). Dei har alltid forma <strong>Verb-Substantiv</strong>, som <span class='kodeinline'>Get-Date</span>: «Get» betyr «hent», og «Date» betyr «dato».",
+            tittel: "Kva er PowerShell?", ikon: "i-lyspære", farge: "bla",
+            intro: "Du skriv ein kommando, trykker Enter og får svar. Kommandoane heiter <strong>cmdlets</strong> og er alltid bygde som <strong>Verb-Substantiv</strong>.",
+            hugs: "<span class='kodeinline'>Get-Date</span> betyr «hent dato». Verbet seier <em>kva</em> som skjer, substantivet seier <em>med kva</em>.",
             eks: [
-                { kode: "Get-Date", forklaring: "Hentar dagens dato og klokkeslett. Dette er den enklaste kommandoen å starte med.", prov: "Get-Date" }
-            ]
+                { kode: "Get-Date", forklaring: "Viser dato og klokkeslett.", prov: "Get-Date" }
+            ],
+            sjekk: { q: "Kva betyr «Get» i Get-Date?", a: ["Hent", "Slett", "Lag"], r: 0, f: "Get betyr «hent». Get-Date hentar datoen." }
         },
         {
-            tittel: "Grunnleggjande kommandoar",
-            tekst: "Her er fire kommandoar du får bruk for heile tida. Merk at vi skriv det <strong>fulle namnet</strong> på kommandoane. Det gjer koden lettare å lese.",
+            tittel: "Grunnleggjande kommandoar", ikon: "i-terminal", farge: "turkis",
+            intro: "Fire kommandoar du får bruk for heile tida.",
+            hugs: "Står du fast? Skriv <span class='kodeinline'>Get-Help</span> og namnet på kommandoen.",
             eks: [
-                { kode: "Get-Location", forklaring: "Viser kva mappe du står i akkurat no.", prov: "Get-Location" },
-                { kode: "Get-Command", forklaring: "Viser ei liste over kommandoar du kan bruke.", prov: "Get-Command" },
-                { kode: "Get-Help Get-Date", forklaring: "Gir hjelp om ei kommando. Her får du hjelp om Get-Date.", prov: "Get-Help Get-Date" },
-                { kode: "Write-Host \"Hei, verda!\"", forklaring: "Skriv ut tekst på skjermen. Teksten står mellom hermeteikn.", prov: "Write-Host \"Hei, verda!\"" }
-            ]
+                { kode: "Get-Location", forklaring: "Kvar er eg no?", prov: "Get-Location" },
+                { kode: "Get-Command", forklaring: "Kva kommandoar finst?", prov: "Get-Command" },
+                { kode: "Get-Help Get-Date", forklaring: "Hjelp om ein kommando.", prov: "Get-Help Get-Date" },
+                { kode: "Write-Host \"Hei, verda!\"", forklaring: "Skriv tekst på skjermen.", prov: "Write-Host \"Hei, verda!\"" }
+            ],
+            sjekk: { q: "Kva kommando skriv tekst på skjermen?", a: ["Get-Location", "Write-Host", "Get-Command"], r: 1, f: "Write-Host skriv ut teksten du gir han." }
         },
         {
-            tittel: "Navigering mellom mapper",
-            tekst: "Mapper er som rom i eit hus. Med PowerShell kan du sjå kva som er i rommet og gå inn i andre rom. Prøv i terminalen: du startar i mappa <span class='kodeinline'>C:\\Brukarar\\Elev</span>.",
+            tittel: "Navigere i mapper", ikon: "i-mappe", farge: "lilla",
+            intro: "Mapper er som rom i eit hus. Du startar i rommet <span class='kodeinline'>C:\\Brukarar\\Elev</span>.",
+            hugs: "To punktum <span class='kodeinline'>..</span> betyr alltid «mappa over».",
             eks: [
-                { kode: "Get-ChildItem", forklaring: "Viser alle filer og mapper i mappa du står i. «ChildItem» betyr «det som ligg inni».", prov: "Get-ChildItem" },
-                { kode: "Set-Location Dokument", forklaring: "Går inn i mappa Dokument. «Set-Location» betyr «sett plassering».", prov: "Set-Location Dokument" },
-                { kode: "Set-Location ..", forklaring: "To punktum betyr «mappa over». Då går du eitt steg opp igjen.", prov: "Set-Location .." }
-            ]
+                { kode: "Get-ChildItem", forklaring: "Kva ligg i mappa?", prov: "Get-ChildItem" },
+                { kode: "Set-Location Dokument", forklaring: "Gå inn i mappa Dokument.", prov: "Set-Location Dokument" },
+                { kode: "Set-Location ..", forklaring: "Gå eitt steg opp igjen.", prov: "Set-Location .." }
+            ],
+            sjekk: { q: "Du står i Dokument. Kva tek deg eitt steg opp?", a: ["Get-ChildItem", "Set-Location Dokument", "Set-Location .."], r: 2, f: "Set-Location .. flyttar deg til mappa over." }
         },
         {
-            tittel: "Opprette filer og mapper",
-            tekst: "Med <span class='kodeinline'>New-Item</span> lagar du nye ting. Du må seie kva type: <span class='kodeinline'>Directory</span> (mappe) eller <span class='kodeinline'>File</span> (fil). Parametrar startar alltid med eit minusteikn.",
+            tittel: "Lage filer og mapper", ikon: "i-fil", farge: "bla",
+            intro: "<span class='kodeinline'>New-Item</span> lagar nye ting. Med <span class='kodeinline'>-ItemType</span> vel du <strong>Directory</strong> (mappe) eller <strong>File</strong> (fil).",
+            hugs: "Parametrar som <span class='kodeinline'>-Name</span> og <span class='kodeinline'>-ItemType</span> startar alltid med minus.",
             eks: [
-                { kode: "New-Item -Name Prosjekt -ItemType Directory", forklaring: "Lagar ei ny mappe som heiter Prosjekt der du står no.", prov: "New-Item -Name Prosjekt -ItemType Directory" },
-                { kode: "New-Item -Name hei.txt -ItemType File -Value \"Hei PowerShell\"", forklaring: "Lagar ei tekstfil som heiter hei.txt, med teksten «Hei PowerShell» i.", prov: "New-Item -Name hei.txt -ItemType File -Value \"Hei PowerShell\"" },
-                { kode: "Get-Content hei.txt", forklaring: "Les og viser innhaldet i fila.", prov: "Get-Content hei.txt" },
-                { kode: "Remove-Item hei.txt", forklaring: "Slettar fila. Ver forsiktig med denne i ei ekte terminal!", prov: "Remove-Item hei.txt" }
-            ]
+                { kode: "New-Item -Name Prosjekt -ItemType Directory", forklaring: "Lagar mappa Prosjekt.", prov: "New-Item -Name Prosjekt -ItemType Directory" },
+                { kode: "New-Item -Name hei.txt -ItemType File -Value \"Hei PowerShell\"", forklaring: "Lagar fila hei.txt med tekst i.", prov: "New-Item -Name hei.txt -ItemType File -Value \"Hei PowerShell\"" },
+                { kode: "Get-Content hei.txt", forklaring: "Les kva som står i fila.", prov: "Get-Content hei.txt" },
+                { kode: "Remove-Item hei.txt", forklaring: "Slettar fila. Ver forsiktig på ei ekte maskin!", prov: "Remove-Item hei.txt" }
+            ],
+            sjekk: { q: "Kva -ItemType gir ei mappe?", a: ["File", "Directory", "Folder"], r: 1, f: "Directory betyr mappe. File betyr fil." }
         },
         {
-            tittel: "Variablar og enkle skript",
-            tekst: "Ein <strong>variabel</strong> er ei lita eske der du lagar ein verdi. Namnet startar alltid med <span class='kodeinline'>$</span>. Eit <strong>skript</strong> er fleire kommandoar i ei fil som endar på <span class='kodeinline'>.ps1</span>.",
+            tittel: "Variablar og skript", ikon: "i-boks", farge: "turkis",
+            intro: "Ein <strong>variabel</strong> er ei eske som tek vare på ein verdi. Namnet startar alltid med <span class='kodeinline'>$</span>.",
+            hugs: "Eit <strong>skript</strong> er fleire kommandoar lagra i ei fil som endar på <span class='kodeinline'>.ps1</span>.",
             eks: [
-                { kode: "$namn = \"Frode\"", forklaring: "Lagar variabelen namn og legg inn teksten «Frode».", prov: "$namn = \"Frode\"" },
-                { kode: "Write-Host \"Hei $namn\"", forklaring: "Set verdien frå variabelen inn i teksten. Det blir til «Hei Frode».", prov: "Write-Host \"Hei $namn\"" },
-                { kode: "$a = 5\n$b = 3\nWrite-Host ($a + $b)", forklaring: "PowerShell kan rekne. Her blir svaret 8.", prov: "$a = 5" },
-                { kode: "foreach ($tal in 1..3) { Write-Host \"Runde $tal\" }", forklaring: "Ei løkke: gjer det same fleire gonger. Her skriv ho ut «Runde 1», «Runde 2» og «Runde 3».", prov: "foreach ($tal in 1..3) { Write-Host \"Runde $tal\" }" },
-                { kode: "# Fila hils.ps1\n$namn = Read-Host \"Kva heiter du\"\nWrite-Host \"Velkomen, $namn!\"", forklaring: "Eit ekte skript lagra som hils.ps1. Linja med # er ein kommentar som PowerShell ikkje køyrer. (Read-Host fungerer ikkje i denne terminalen.)", prov: null }
-            ]
+                { kode: "$namn = \"Ola\"", forklaring: "Legg teksten «Ola» i eska $namn.", prov: "$namn = \"Ola\"" },
+                { kode: "Write-Host \"Hei $namn\"", forklaring: "Blir til «Hei Ola».", prov: "Write-Host \"Hei $namn\"" },
+                { kode: "5 + 3", forklaring: "PowerShell kan rekne. Svaret blir 8.", prov: "5 + 3" },
+                { kode: "foreach ($tal in 1..3) { Write-Host \"Runde $tal\" }", forklaring: "Ei løkke gjer det same fleire gonger.", prov: "foreach ($tal in 1..3) { Write-Host \"Runde $tal\" }" },
+                { kode: "# Fila hils.ps1\n$namn = Read-Host \"Kva heiter du\"\nWrite-Host \"Velkomen, $namn!\"", forklaring: "Eit lite skript. Linja med # er ein kommentar. (Dette kan ikkje køyrast her.)", prov: null }
+            ],
+            sjekk: { q: "Kva teikn startar alle variablar?", a: ["#", "$", "%"], r: 1, f: "Variablar startar med $, til dømes $namn." }
         }
     ];
 
     /* Oppgåver i terminalen. «sjekk» får tilstanden og seier om oppgåva er løyst. */
     var OPPG = [
-        { id: "dato", tekst: "Vis dagens dato med ei PowerShell-kommando.", hint: "Kommandoen startar med «Get-» og slutar på «Date».",
+        { id: "dato", tekst: "Vis dagens dato.", hint: "Kommandoen startar med «Get-» og handlar om dato.",
+          losning: ["Get-Date"],
           sjekk: function (s) { return s.sisteKmd === "get-date" && s.sisteOk; } },
-        { id: "mappe", tekst: "Gå inn i mappa Dokument.", hint: "Bruk Set-Location og namnet på mappa. Sjå kva mapper som finst med Get-ChildItem.",
+        { id: "mappe", tekst: "Gå inn i mappa Dokument.", hint: "Bruk Set-Location og namnet på mappa. Get-ChildItem viser kva mapper som finst.",
+          losning: ["Set-Location C:\\Brukarar\\Elev\\Dokument"],
           sjekk: function (s) { return s.cwd.join("\\").toLowerCase() === "c:\\brukarar\\elev\\dokument"; } },
-        { id: "nymappe", tekst: "Lag ei ny mappe som heiter Prosjekt.", hint: "New-Item -Name Prosjekt -ItemType Directory",
-          sjekk: function (s) { return finnNoko("Prosjekt", "dir"); } },
-        { id: "nyfil", tekst: "Lag fila hei.txt med teksten «Hei PowerShell» i.", hint: "Bruk New-Item med -ItemType File og -Value «Hei PowerShell», eller Set-Content.",
-          sjekk: function (s) { var f = finnNoko("hei.txt", "file"); return !!f && /hei/i.test(f.content || ""); } },
-        { id: "variabel", tekst: "Lag variabelen $namn med namnet ditt, og skriv han ut.", hint: "Først: $namn = \"Ola\". Deretter: Write-Host $namn.",
+        { id: "nymappe", tekst: "Lag ei ny mappe som heiter Prosjekt.", hint: "Bruk New-Item med -Name og -ItemType Directory.",
+          losning: ["New-Item -Name Prosjekt -ItemType Directory"],
+          sjekk: function () { return !!finnNoko("Prosjekt", "dir"); } },
+        { id: "nyfil", tekst: "Lag fila hei.txt med teksten «Hei PowerShell».", hint: "Bruk New-Item med -ItemType File og -Value.",
+          losning: ["New-Item -Name hei.txt -ItemType File -Value \"Hei PowerShell\""],
+          sjekk: function () { var f = finnNoko("hei.txt", "file"); return !!f && /hei/i.test(f.content || ""); } },
+        { id: "variabel", tekst: "Lag variabelen $namn med namnet ditt, og skriv han ut.", hint: "To steg: lag variabelen først, og skriv han så ut med Write-Host.",
+          losning: ["$namn = \"Ola\"", "Write-Host $namn"],
           sjekk: function (s) { return s.namnUtskrift; } }
     ];
 
-    /* Quiz-spørsmål: a = svaralternativ, r = indeks til rett svar, f = forklaring */
+    /* Quiz-spørsmål: a = svaralternativ, r = indeks til rett svar, f = kort forklaring */
     var SPM = [
-        { q: "Kva er PowerShell?", a: ["Eit spel frå Microsoft", "Eit verktøy for å styre datamaskina med kommandoar", "Ein nettlesar"], r: 1, f: "PowerShell er eit kommandolinjeverktøy og skriptspråk frå Microsoft." },
-        { q: "Korleis er kommandoar (cmdlets) i PowerShell bygde opp?", a: ["Verb-Substantiv, til dømes Get-Date", "Berre tal", "Substantiv_Verb_Tal"], r: 0, f: "Cmdlets har forma Verb-Substantiv. Get-Date betyr «hent dato»." },
-        { q: "Kva kommando viser kva som ligg i ei mappe?", a: ["Get-ChildItem", "Show-Folder", "Set-Location"], r: 0, f: "Get-ChildItem viser filer og mapper i mappa du står i." },
-        { q: "Kva gjer Set-Location ..?", a: ["Slettar mappa", "Går eitt steg opp til mappa over", "Lagar ei ny mappe"], r: 1, f: "To punktum (..) betyr mappa over. Set-Location .. flyttar deg eitt steg opp." },
-        { q: "Kva kommando lagar ei ny mappe?", a: ["New-Item -ItemType Directory", "Make-Folder", "Create-File"], r: 0, f: "New-Item lagar nye ting. Med -ItemType Directory får du ei mappe." },
-        { q: "Kva teikn startar namnet på ein variabel?", a: ["#", "$", "%"], r: 1, f: "Variablar startar med dollarteikn, til dømes $namn." },
-        { q: "Kva gjer Get-Content notat.txt?", a: ["Slettar fila", "Viser innhaldet i fila", "Lagar fila"], r: 1, f: "Get-Content les innhaldet i ei fil og viser det." },
-        { q: "Kva gjer Remove-Item?", a: ["Slettar ei fil eller mappe", "Kopierer ei fil", "Gir nytt namn"], r: 0, f: "Remove-Item fjernar filer og mapper. Ver forsiktig!" },
-        { q: "Kva kommando skriv ut tekst på skjermen?", a: ["Print-Text", "Write-Host", "Say-Text"], r: 1, f: "Write-Host \"Hei\" skriv ut teksten Hei." },
-        { q: "Kva fil-endelse har eit PowerShell-skript?", a: [".exe", ".ps1", ".doc"], r: 1, f: "PowerShell-skript lagrar ein som filer med endinga .ps1." },
-        { q: "Kva brukar du for å få hjelp om ei kommando?", a: ["Get-Help", "Ask-Teacher", "Show-Manual"], r: 0, f: "Get-Help etterfølgd av kommandonamnet gir ei forklaring." }
+        { q: "Kva er PowerShell?", a: ["Eit spel frå Microsoft", "Eit verktøy for å styre datamaskina med kommandoar", "Ein nettlesar"], r: 1, f: "PowerShell er eit kommandoverktøy og skriptspråk frå Microsoft." },
+        { q: "Korleis er cmdlets bygde opp?", a: ["Verb-Substantiv, som Get-Date", "Berre tal", "Substantiv_Verb_Tal"], r: 0, f: "Verb-Substantiv. Get-Date betyr «hent dato»." },
+        { q: "Kva kommando viser kva som ligg i ei mappe?", a: ["Get-ChildItem", "Show-Folder", "Set-Location"], r: 0, f: "Get-ChildItem viser filer og mapper der du står." },
+        { q: "Kva gjer Set-Location ..?", a: ["Slettar mappa", "Går eitt steg opp", "Lagar ei ny mappe"], r: 1, f: ".. betyr mappa over." },
+        { q: "Kva kommando lagar ei ny mappe?", a: ["New-Item -ItemType Directory", "Make-Folder", "Create-File"], r: 0, f: "New-Item med -ItemType Directory lagar ei mappe." },
+        { q: "Kva teikn startar namnet på ein variabel?", a: ["#", "$", "%"], r: 1, f: "Variablar startar med $, til dømes $namn." },
+        { q: "Kva gjer Get-Content notat.txt?", a: ["Slettar fila", "Viser innhaldet i fila", "Lagar fila"], r: 1, f: "Get-Content les fila og viser innhaldet." },
+        { q: "Kva gjer Remove-Item?", a: ["Slettar ei fil eller mappe", "Kopierer ei fil", "Gir nytt namn"], r: 0, f: "Remove-Item slettar. Ver forsiktig!" },
+        { q: "Kva kommando skriv ut tekst på skjermen?", a: ["Print-Text", "Write-Host", "Say-Text"], r: 1, f: "Write-Host \"Hei\" skriv ut Hei." },
+        { q: "Kva fil-ending har eit PowerShell-skript?", a: [".exe", ".ps1", ".doc"], r: 1, f: "PowerShell-skript endar på .ps1." },
+        { q: "Kva brukar du for å få hjelp om ein kommando?", a: ["Get-Help", "Ask-Teacher", "Show-Manual"], r: 0, f: "Get-Help pluss kommandonamnet gir ei forklaring." }
     ];
 
     /* =====================================================
        3. Framgang og poeng (localStorage)
        ===================================================== */
-    var LAGRINGSNOKKEL = "gruppe6-framgang-v1";
-    var state = { nivaa: [], oppg: [], quiz: [], tema: "dark" };
+    var LAGRINGSNOKKEL = "gruppe6-framgang-v2";
+    var GAMMAL_NOKKEL = "gruppe6-framgang-v1";
+    var state = { nivaa: [], oppg: [], quiz: [], tema: "light", sist: 0 };
 
     function lagre() {
         try { localStorage.setItem(LAGRINGSNOKKEL, JSON.stringify(state)); } catch (e) { /* lagring kan vere avslått */ }
@@ -151,13 +212,19 @@
 
     function lastFramgang() {
         try {
-            var rå = localStorage.getItem(LAGRINGSNOKKEL);
-            if (!rå) { return; }
-            var o = JSON.parse(rå);
+            var raa = localStorage.getItem(LAGRINGSNOKKEL);
+            var nyVersjon = !!raa;
+            if (!raa) { raa = localStorage.getItem(GAMMAL_NOKKEL); } // ta med framgang frå prototypen
+            if (!raa) { return; }
+            var o = JSON.parse(raa);
             state.nivaa = gyldigListe(o.nivaa, NIVAA.length);
-            state.oppg = (Array.isArray(o.oppg) ? o.oppg : []).filter(function (id) { return OPPG.some(function (x) { return x.id === id; }); });
+            state.oppg = (Array.isArray(o.oppg) ? o.oppg : []).filter(function (id, i, a) {
+                return OPPG.some(function (x) { return x.id === id; }) && a.indexOf(id) === i;
+            });
             state.quiz = gyldigListe(o.quiz, SPM.length);
-            state.tema = o.tema === "light" ? "light" : "dark";
+            state.tema = nyVersjon && o.tema === "dark" ? "dark" : "light";
+            state.sist = typeof o.sist === "number" && o.sist >= 0 && o.sist < NIVAA.length ? o.sist : 0;
+            if (!nyVersjon) { lagre(); }
         } catch (e) { /* ugyldig data: start på nytt */ }
     }
 
@@ -165,16 +232,24 @@
     function totalt() { return NIVAA.length + OPPG.length + SPM.length; }
     function ferdige() { return state.nivaa.length + state.oppg.length + state.quiz.length; }
 
+    var forrigePoeng = null;
     function oppdaterTopp() {
         var pst = Math.round(ferdige() / totalt() * 100);
-        $("poengVis").textContent = String(poeng());
+        var p = poeng();
+        $("poengVis").textContent = String(p);
+        if (forrigePoeng !== null && p > forrigePoeng && !roleg) {
+            var m = document.querySelector(".poengmerke");
+            m.classList.remove("dunk"); void m.offsetWidth; m.classList.add("dunk");
+        }
+        forrigePoeng = p;
         $("framdriftBar").style.width = pst + "%";
         $("framdriftRot").setAttribute("aria-valuenow", String(pst));
-        $("framdriftTekst").textContent = pst + " % fullført";
+        $("framdriftTekst").textContent = pst + " %";
+        oppdaterHeim();
     }
 
     /* =====================================================
-       4. Navigasjon og lys/mørk modus
+       4. Navigasjon, tema og heimesida
        ===================================================== */
     var VISNINGAR = ["heim", "laer", "terminal", "quiz"];
 
@@ -187,29 +262,98 @@
             if (aktiv) { b.setAttribute("aria-current", "page"); } else { b.removeAttribute("aria-current"); }
         });
         if (oppdaterHash !== false && history.replaceState) { history.replaceState(null, "", "#" + id); }
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: roleg ? "auto" : "smooth" });
+        if (id === "terminal") { setTimeout(rullNed, 50); }
     }
 
     function settTema(tema) {
         state.tema = tema;
         document.documentElement.setAttribute("data-tema", tema);
-        var lys = tema === "light";
-        $("temaIkon").textContent = lys ? "☀️" : "🌙";
-        $("temaTekst").textContent = lys ? "Lys" : "Mørk";
-        $("temaKnapp").setAttribute("aria-pressed", lys ? "true" : "false");
+        var mork = tema === "dark";
+        $("temaIkon").firstChild.setAttribute("href", mork ? "#i-sol" : "#i-maane");
+        $("temaKnapp").setAttribute("aria-pressed", mork ? "true" : "false");
+        $("temaKnapp").setAttribute("aria-label", mork ? "Byt til lys modus" : "Byt til mørk modus");
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) { meta.setAttribute("content", lys ? "#f3f5fd" : "#0f1222"); }
+        if (meta) { meta.setAttribute("content", mork ? "#0e1330" : "#f4f8ff"); }
         lagre();
     }
 
+    /** Det første nivået som ikkje er fullført (eller -1 om alle er ferdige). */
+    function forsteUferdigeNivaa() {
+        for (var i = 0; i < NIVAA.length; i++) { if (state.nivaa.indexOf(i) === -1) { return i; } }
+        return -1;
+    }
+
+    function oppdaterHeim() {
+        function sett(id, ferdig, av) {
+            $(id).style.width = (ferdig / av * 100) + "%";
+            $(id + "Tal").textContent = ferdig + "/" + av;
+        }
+        sett("frNivaa", state.nivaa.length, NIVAA.length);
+        sett("frOppg", state.oppg.length, OPPG.length);
+        sett("frQuiz", state.quiz.length, SPM.length);
+
+        var tekst = $("fortsetKnapp").lastChild;
+        var neste = forsteUferdigeNivaa();
+        if (ferdige() === 0) { tekst.textContent = "Start kurset"; }
+        else if (neste !== -1) { tekst.textContent = "Hald fram: nivå " + (neste + 1); }
+        else if (state.oppg.length < OPPG.length) { tekst.textContent = "Hald fram: oppgåver"; }
+        else { tekst.textContent = "Ta quizen"; }
+    }
+
+    function fortset() {
+        var neste = forsteUferdigeNivaa();
+        if (neste !== -1) { visNivaa(neste); gaaTil("laer"); }
+        else if (state.oppg.length < OPPG.length) { gaaTil("terminal"); }
+        else { gaaTil("quiz"); }
+    }
+
+    /* Animert terminal på framsida: skriv kommandoar bokstav for bokstav */
+    var HERO_DEMO = [
+        { kmd: "Get-Date", kl: "k", ut: "torsdag 22. oktober 2026 09:41:07" },
+        { kmd: "Write-Host \"Hei, verda!\"", kl: "k", ut: "Hei, verda!" },
+        { kmd: "$namn = \"Ola\"", kl: "s", ut: null },
+        { kmd: "Write-Host \"Velkomen, $namn!\"", kl: "k", ut: "Velkomen, Ola!" }
+    ];
+    function startHeroDemo() {
+        var pre = $("heroKode");
+        HERO_DEMO[0].ut = CMDS["get-date"]("")[0]; // same dato-format som i terminalen
+
+        function prompt() { return "<span class='p'>PS C:\\Brukarar\\Elev&gt;</span> "; }
+        function farg(kmd) { return fargeleggKode(kmd).replace(/t-kmd/g, "k").replace(/t-str/g, "s"); }
+
+        if (roleg) {
+            pre.innerHTML = HERO_DEMO.map(function (d) { return prompt() + farg(d.kmd) + (d.ut ? "\n<span class='o'>" + d.ut + "</span>" : ""); }).join("\n") + "\n" + prompt() + "<span class='markor'></span>";
+            return;
+        }
+        var ferdig = "", linje = 0, teikn = 0;
+        function tikk() {
+            if (linje >= HERO_DEMO.length) {
+                setTimeout(function () { ferdig = ""; linje = 0; teikn = 0; tikk(); }, 4000);
+                return;
+            }
+            var d = HERO_DEMO[linje];
+            if (teikn <= d.kmd.length) {
+                pre.innerHTML = ferdig + prompt() + farg(d.kmd.slice(0, teikn)) + "<span class='markor'></span>";
+                teikn++;
+                setTimeout(tikk, 45 + Math.random() * 60);
+            } else {
+                ferdig += prompt() + farg(d.kmd) + "\n" + (d.ut ? "<span class='o'>" + d.ut + "</span>\n" : "");
+                pre.innerHTML = ferdig + prompt() + "<span class='markor'></span>";
+                linje++; teikn = 0;
+                setTimeout(tikk, 900);
+            }
+        }
+        tikk();
+    }
+
     /* =====================================================
-       5. Nivåvisinga
+       5. Nivåa
        ===================================================== */
 
     /** Fargelegg kode: kommandoar, parametrar, tekst, variablar og kommentarar. */
     function fargeleggKode(tekst) {
         var ut = tekst.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        // Ein regex som finn alle typar på éin gong, så ein ikkje fargar inni allereie fargelagt kode
         return ut.replace(/(#.*$)|("[^"]*"|'[^']*')|(\$\w+)|(\b[A-Z][a-z]+-[A-Z][A-Za-z]+\b)|(\s-[A-Za-z]+)/gm, function (m, kom, str, vari, kmd, par) {
             if (kom) { return "<span class='t-kom'>" + kom + "</span>"; }
             if (str) { return "<span class='t-str'>" + str + "</span>"; }
@@ -219,67 +363,178 @@
         });
     }
 
-    function byggNivaa() {
-        var liste = $("nivaaListe");
-        liste.textContent = "";
+    var sjekkRett = {}; // nivå der den raske sjekken er svart rett i denne økta
+
+    function byggStegar() {
+        var ol = $("nivaaStegar");
+        ol.textContent = "";
         NIVAA.forEach(function (n, i) {
-            var kort = el("article", "kort nivaa");
-            kort.id = "nivaa" + (i + 1);
-
-            var topp = el("div", "nivaa-topp");
-            topp.appendChild(el("div", "nivaa-nr", String(i + 1)));
-            topp.appendChild(el("h3", "", "Nivå " + (i + 1) + ": " + n.tittel));
-            kort.appendChild(topp);
-
-            var p = el("p");
-            p.innerHTML = n.tekst; // Teksten er skriven av oss, ikkje av brukaren
-            kort.appendChild(p);
-
-            n.eks.forEach(function (e) {
-                var boks = el("div", "eks");
-                var pre = el("pre", "kode");
-                pre.innerHTML = fargeleggKode(e.kode);
-                boks.appendChild(pre);
-                boks.appendChild(el("p", "muted", "👉 " + e.forklaring));
-                if (e.prov) {
-                    var b = el("button", "knapp sek liten-knapp", "▶ Prøv i terminalen");
-                    b.type = "button";
-                    b.addEventListener("click", function () {
-                        gaaTil("terminal");
-                        var inn = $("termInn");
-                        inn.value = e.prov;
-                        setTimeout(function () { inn.focus(); }, 250);
-                    });
-                    boks.appendChild(b);
-                }
-                kort.appendChild(boks);
-            });
-
-            var ferdig = el("button", "knapp", "");
-            ferdig.type = "button";
-            ferdig.addEventListener("click", function () {
-                if (state.nivaa.indexOf(i) !== -1) { return; }
-                state.nivaa.push(i);
-                lagre();
-                oppdaterNivaa();
-                oppdaterTopp();
-                toast("🎉 +10 poeng! Nivå " + (i + 1) + " er fullført");
-            });
-            kort.appendChild(ferdig);
-            liste.appendChild(kort);
+            var li = el("li");
+            var b = el("button", "steg-knapp");
+            b.type = "button";
+            var ferdig = state.nivaa.indexOf(i) !== -1;
+            if (ferdig) { b.classList.add("ferdig"); }
+            if (i === state.sist) { b.classList.add("valt"); b.setAttribute("aria-current", "step"); }
+            var nr = el("span", "steg-nr");
+            if (ferdig) { nr.appendChild(ikon("i-hake")); } else { nr.textContent = String(i + 1); }
+            b.appendChild(nr);
+            var t = el("span", "steg-tekst");
+            t.appendChild(el("small", "", "Nivå " + (i + 1)));
+            t.appendChild(el("span", "", n.tittel));
+            b.appendChild(t);
+            b.setAttribute("aria-label", "Nivå " + (i + 1) + ": " + n.tittel + (ferdig ? " (fullført)" : ""));
+            b.addEventListener("click", function () { visNivaa(i); });
+            li.appendChild(b);
+            ol.appendChild(li);
         });
-        oppdaterNivaa();
     }
 
-    function oppdaterNivaa() {
-        $$(".nivaa").forEach(function (kort, i) {
-            var ferdig = state.nivaa.indexOf(i) !== -1;
-            kort.classList.toggle("ferdig", ferdig);
-            var knapp = kort.lastChild;
-            knapp.textContent = ferdig ? "✅ Fullført" : "✔ Marker som fullført (+10 poeng)";
-            knapp.disabled = ferdig;
-            knapp.classList.toggle("ferdig", ferdig);
+    function visNivaa(i) {
+        state.sist = i;
+        lagre();
+        byggStegar();
+
+        var n = NIVAA[i];
+        var ferdig = state.nivaa.indexOf(i) !== -1;
+        var vis = $("nivaaVisning");
+        vis.textContent = "";
+        var kort = el("article", "kort nivaa-kort");
+
+        /* Toppen */
+        var hovud = el("div", "nivaa-hovud");
+        var ib = el("span", "ikonboks " + n.farge);
+        ib.appendChild(ikon(n.ikon));
+        hovud.appendChild(ib);
+        var tittel = el("div");
+        tittel.appendChild(el("small", "", "Nivå " + (i + 1) + " av " + NIVAA.length));
+        tittel.appendChild(el("h3", "", n.tittel));
+        hovud.appendChild(tittel);
+        if (ferdig) {
+            var fm = el("span", "ferdig-merke");
+            fm.appendChild(ikon("i-hake"));
+            fm.appendChild(el("span", "", "Fullført"));
+            hovud.appendChild(fm);
+        }
+        kort.appendChild(hovud);
+
+        /* Kort forklaring og huskeregel (teksten er skriven av oss, ikkje av brukaren) */
+        var intro = el("p", "nivaa-intro");
+        intro.innerHTML = n.intro;
+        kort.appendChild(intro);
+
+        var hugs = el("div", "hugs");
+        hugs.appendChild(ikon("i-lyspære"));
+        var hp = el("p");
+        hp.innerHTML = "<strong>Hugs:</strong> " + n.hugs;
+        hugs.appendChild(hp);
+        kort.appendChild(hugs);
+
+        /* Eksempel */
+        var liste = el("div", "eks-liste");
+        n.eks.forEach(function (e) {
+            var boks = el("div", "eks");
+            var pre = el("pre", "kode");
+            pre.innerHTML = fargeleggKode(e.kode);
+            boks.appendChild(pre);
+            var under = el("div", "eks-under");
+            under.appendChild(el("p", "", e.forklaring));
+            if (e.prov) {
+                var pb = knapp("prov-knapp", "i-spel", "Prøv i terminalen");
+                pb.addEventListener("click", function () { provITerminal(e.prov); });
+                under.appendChild(pb);
+            }
+            boks.appendChild(under);
+            liste.appendChild(boks);
         });
+        kort.appendChild(liste);
+
+        /* Rask sjekk */
+        var rs = el("div", "rask-sjekk");
+        var h4 = el("h4");
+        h4.appendChild(ikon("i-mal"));
+        h4.appendChild(el("span", "", "Rask sjekk"));
+        rs.appendChild(h4);
+        rs.appendChild(el("p", "sporsmal", n.sjekk.q));
+        var alt = el("div", "sjekk-alt");
+        var fb = el("p", "sjekk-fb");
+        fb.setAttribute("aria-live", "polite");
+        var loyst = ferdig || sjekkRett[i];
+        n.sjekk.a.forEach(function (svar, ai) {
+            var b = el("button", "", svar);
+            b.type = "button";
+            if (loyst) {
+                b.disabled = true;
+                if (ai === n.sjekk.r) { b.classList.add("rett"); }
+            }
+            b.addEventListener("click", function () {
+                if (ai === n.sjekk.r) {
+                    sjekkRett[i] = true;
+                    $$("button", alt).forEach(function (x) { x.disabled = true; x.classList.remove("feil"); });
+                    b.classList.add("rett");
+                    fb.className = "sjekk-fb ok";
+                    fb.textContent = "Rett! " + n.sjekk.f + (ferdig ? "" : " No kan du fullføre nivået.");
+                    fullfor.disabled = ferdig;
+                    if (!ferdig) { fullfor.focus(); }
+                } else {
+                    b.classList.remove("feil"); void b.offsetWidth; b.classList.add("feil");
+                    b.disabled = true;
+                    fb.className = "sjekk-fb nei";
+                    fb.textContent = "Ikkje heilt. Prøv eit anna svar!";
+                }
+            });
+            alt.appendChild(b);
+        });
+        if (loyst) { fb.className = "sjekk-fb ok"; fb.textContent = "Rett! " + n.sjekk.f; }
+        rs.appendChild(alt);
+        rs.appendChild(fb);
+        kort.appendChild(rs);
+
+        /* Navigering og fullføring */
+        var nav = el("div", "nivaa-nav");
+        var forrige = knapp("knapp sek liten-knapp", "i-pil-v", "Førre");
+        forrige.disabled = i === 0;
+        forrige.addEventListener("click", function () { visNivaa(i - 1); scrollTilLaer(); });
+        nav.appendChild(forrige);
+
+        var midt = el("div", "midt");
+        var fullfor = knapp("knapp" + (ferdig ? " ferdig" : ""), "i-hake", ferdig ? "Fullført" : "Fullfør nivået (+10)");
+        fullfor.disabled = ferdig || !sjekkRett[i];
+        fullfor.title = ferdig ? "" : "Svar rett på den raske sjekken først";
+        fullfor.addEventListener("click", function () {
+            if (state.nivaa.indexOf(i) !== -1) { return; }
+            state.nivaa.push(i);
+            lagre();
+            oppdaterTopp();
+            toast("+10 poeng! Nivå " + (i + 1) + " er fullført");
+            if (state.nivaa.length === NIVAA.length) { konfetti(90); toast("Alle fem nivåa er fullførte!", "i-pokal"); }
+            visNivaa(i);
+        });
+        midt.appendChild(fullfor);
+        nav.appendChild(midt);
+
+        var siste = i === NIVAA.length - 1;
+        var neste = knapp("knapp " + (siste ? "turkis" : "sek") + " liten-knapp", siste ? "i-terminal" : "i-pil-h", siste ? "Til oppgåvene" : "Neste");
+        neste.addEventListener("click", function () {
+            if (siste) { gaaTil("terminal"); } else { visNivaa(i + 1); scrollTilLaer(); }
+        });
+        nav.appendChild(neste);
+        kort.appendChild(nav);
+
+        vis.appendChild(kort);
+    }
+
+    function scrollTilLaer() {
+        var topp = $("nivaaVisning").getBoundingClientRect().top + window.pageYOffset - 140;
+        if (window.pageYOffset > topp) { window.scrollTo({ top: Math.max(0, topp), behavior: roleg ? "auto" : "smooth" }); }
+    }
+
+    /** Opnar terminalen og fyller inn ein kommando, klar til å trykke Enter. */
+    function provITerminal(kmd) {
+        gaaTil("terminal");
+        var inn = $("termInn");
+        inn.value = kmd;
+        setTimeout(function () { inn.focus(); inn.setSelectionRange(kmd.length, kmd.length); }, 300);
+        toast("Trykk Enter for å køyre kommandoen", "i-terminal");
     }
 
     /* =====================================================
@@ -797,11 +1052,11 @@
             if (svar === null) { return { ut: ut, ok: true, tom: false, tøm: true, kmd: namn }; }
             leggTil(svar);
             if ((namn === "write-host" || namn === "write-output") && /\$namn\b/i.test(rest) && Object.prototype.hasOwnProperty.call(vars, "namn")) { term.namnUtskrift = true; }
-            if (brukaAlias) { leggTil(["💡 Tips: «" + delar[1] + "» er ein kortversjon (alias). Det fulle namnet er " + VISNAMN[namn] + ". Bruk det fulle namnet, så blir koden lettare å lese."], "info"); }
+            if (brukaAlias) { leggTil(["Tips: «" + delar[1] + "» er ein kortversjon (alias). Det fulle namnet er " + VISNAMN[namn] + ". Bruk det fulle namnet, så blir koden lettare å lese."], "info"); }
             return { ut: ut, ok: true, kmd: namn };
         } catch (e) {
             if (!(e instanceof PSFeil)) { throw e; }
-            return { ut: [{ t: e.msg, c: "fel" }, { t: "💡 Hint: " + e.hint, c: "hint" }], ok: false, feil: true, kmd: "" };
+            return { ut: [{ t: e.msg, c: "fel" }, { t: "Hint: " + e.hint, c: "hint" }], ok: false, feil: true, kmd: "" };
         }
     }
 
@@ -829,8 +1084,8 @@
     function velkomst() {
         $("termUt").textContent = "";
         skrivLinje("Windows PowerShell (simulert)", "info");
-        skrivLinje("Dette er ei øvingsteminal. Ingenting her påverkar den ekte datamaskina di.", "info");
-        skrivLinje("Skriv Get-Command for å sjå kva du kan bruke, eller prøv ei oppgåve til høgre.", "info");
+        skrivLinje("Dette er ein øvingsterminal. Ingenting her påverkar den ekte datamaskina di.", "info");
+        skrivLinje("Skriv Get-Command for å sjå kva du kan bruke, eller løys oppgåvene.", "info");
         skrivLinje("");
     }
 
@@ -876,6 +1131,20 @@
                 e.preventDefault();
                 if (histPos < historikk.length - 1) { histPos++; $("termInn").value = historikk[histPos]; }
                 else { histPos = historikk.length; $("termInn").value = ""; }
+            } else if (e.key === "Tab") {
+                /* Tab fullfører kommandonamn, til dømes Get-Ch -> Get-ChildItem */
+                var inn = $("termInn"), v = inn.value;
+                var m = /^(\S+)$/.exec(v);
+                if (!m) { return; }
+                e.preventDefault();
+                var treff = Object.keys(VISNAMN).filter(function (k) { return k.indexOf(m[1].toLowerCase()) === 0; })
+                    .map(function (k) { return VISNAMN[k]; }).sort();
+                if (treff.length === 1) { inn.value = treff[0] + " "; }
+                else if (treff.length > 1) {
+                    skrivEcho(promptTekst(), v);
+                    skrivLinje(treff.join("   "), "info");
+                    rullNed();
+                }
             }
         });
         $("term").addEventListener("click", function () {
@@ -890,45 +1159,75 @@
         $("termNull").addEventListener("click", function () {
             nullstillTerminal();
             $("termInn").focus();
-            toast("Terminalen er nullstilt");
+            toast("Terminalen er nullstilt", "i-oppatt");
         });
     }
 
     /* =====================================================
        7. Oppgåvene
        ===================================================== */
-    var opneHint = {};
+    var hintNivaa = {};   // 0 = ingenting, 1 = hint vist, 2 = løysing vist
+    var fyllPos = {};     // kva linje i løysinga som blir fylt inn neste gong
+    var nyssLoyst = {};
 
     function byggOppgaver() {
         var liste = $("oppgListe");
         liste.textContent = "";
         var forsteIkkjeFerdig = -1;
         OPPG.forEach(function (o, i) { if (forsteIkkjeFerdig === -1 && state.oppg.indexOf(o.id) === -1) { forsteIkkjeFerdig = i; } });
+        $("oppgStatus").textContent = state.oppg.length + " av " + OPPG.length + " løyste";
 
         OPPG.forEach(function (o, i) {
             var ferdig = state.oppg.indexOf(o.id) !== -1;
-            var li = el("li", "oppg" + (ferdig ? " ferdig" : "") + (i === forsteIkkjeFerdig ? " aktiv" : ""));
+            var li = el("li", "oppg" + (ferdig ? " ferdig" : "") + (i === forsteIkkjeFerdig ? " aktiv" : "") + (nyssLoyst[o.id] ? " nyss" : ""));
             var topp = el("div", "oppg-topp");
-            topp.appendChild(el("span", "oppg-ikon", ferdig ? "✅" : (i + 1) + "."));
+            var ik = el("span", "oppg-ikon");
+            if (ferdig) { ik.appendChild(ikon("i-hake")); } else { ik.textContent = String(i + 1); }
+            topp.appendChild(ik);
             var tekstBoks = el("div");
-            tekstBoks.appendChild(el("div", "", o.tekst));
-            tekstBoks.appendChild(el("div", "oppg-poeng", ferdig ? "Fullført! +20 poeng" : "20 poeng"));
+            tekstBoks.appendChild(el("div", "oppg-tekst", o.tekst));
+            tekstBoks.appendChild(el("div", "oppg-poeng", ferdig ? "Løyst! +20 poeng" : "20 poeng"));
             topp.appendChild(tekstBoks);
             li.appendChild(topp);
 
             if (!ferdig) {
-                var hb = el("button", "hint-knapp", opneHint[o.id] ? "Skjul hint" : "💡 Vis hint");
-                hb.type = "button";
-                hb.setAttribute("aria-expanded", opneHint[o.id] ? "true" : "false");
-                hb.addEventListener("click", function () {
-                    opneHint[o.id] = !opneHint[o.id];
-                    byggOppgaver();
-                });
-                li.appendChild(hb);
-                if (opneHint[o.id]) { li.appendChild(el("div", "hint-tekst", o.hint)); }
+                var nivaa = hintNivaa[o.id] || 0;
+                var rad = el("div", "oppg-knappar");
+                if (nivaa === 0) {
+                    var hb = knapp("hint-knapp", "i-lyspære", "Hint");
+                    hb.addEventListener("click", function () { hintNivaa[o.id] = 1; byggOppgaver(); });
+                    rad.appendChild(hb);
+                } else if (nivaa === 1) {
+                    var lb = knapp("hint-knapp", "i-lyspære", "Vis løysing");
+                    lb.addEventListener("click", function () { hintNivaa[o.id] = 2; byggOppgaver(); });
+                    rad.appendChild(lb);
+                } else {
+                    var pos = fyllPos[o.id] || 0;
+                    var fb = knapp("hint-knapp", "i-kopi", o.losning.length > 1 ? "Fyll inn linje " + (pos + 1) : "Fyll inn");
+                    fb.addEventListener("click", function () {
+                        var p = fyllPos[o.id] || 0;
+                        $("termInn").value = o.losning[p];
+                        $("termInn").focus();
+                        fyllPos[o.id] = (p + 1) % o.losning.length;
+                        byggOppgaver();
+                    });
+                    rad.appendChild(fb);
+                }
+                li.appendChild(rad);
+                if (nivaa >= 1) { li.appendChild(el("div", "hint-tekst", "Hint: " + o.hint)); }
+                if (nivaa >= 2) {
+                    var ht = el("div", "hint-tekst");
+                    ht.appendChild(el("span", "", "Løysing: "));
+                    o.losning.forEach(function (l, li2) {
+                        if (li2) { ht.appendChild(el("span", "", " så ")); }
+                        ht.appendChild(el("code", "", l));
+                    });
+                    li.appendChild(ht);
+                }
             }
             liste.appendChild(li);
         });
+        nyssLoyst = {};
     }
 
     /** Køyrer etter kvar kommando: sjekkar om ei oppgåve er løyst. */
@@ -936,115 +1235,215 @@
         var tilstand = { cwd: cwd, sisteKmd: term.sisteKmd, sisteOk: term.sisteOk, namnUtskrift: term.namnUtskrift };
         var nye = [];
         OPPG.forEach(function (o) {
-            if (state.oppg.indexOf(o.id) === -1 && o.sjekk(tilstand)) { state.oppg.push(o.id); nye.push(o); }
+            if (state.oppg.indexOf(o.id) === -1 && o.sjekk(tilstand)) { state.oppg.push(o.id); nye.push(o); nyssLoyst[o.id] = true; }
         });
         if (nye.length) {
             lagre();
             byggOppgaver();
             oppdaterTopp();
-            nye.forEach(function (o) { skrivLinje("🎉 Oppgåve løyst: " + o.tekst + " (+20 poeng)", "ok"); });
-            toast("🎉 +" + (nye.length * 20) + " poeng! Oppgåve løyst");
-            if (state.oppg.length === OPPG.length) { skrivLinje("🏁 Du har løyst alle oppgåvene. Flott jobba!", "ok"); }
+            nye.forEach(function (o) { skrivLinje("✔ Oppgåve løyst: " + o.tekst + " (+20 poeng)", "ok"); });
+            toast("+" + (nye.length * 20) + " poeng! Oppgåve løyst", "i-mal");
+            if (state.oppg.length === OPPG.length) {
+                skrivLinje("★ Du har løyst alle oppgåvene. Flott jobba! Prøv quizen no.", "ok");
+                konfetti(80);
+            }
         }
     }
 
     /* =====================================================
        8. Quizen
        ===================================================== */
-    var qz = { rekkefolge: [], nr: 0, rette: 0, svart: false };
+    var BOKSTAVAR = ["A", "B", "C", "D"];
+    var qz = { rekkefolge: [], altOrd: [], nr: 0, rette: 0, valt: null, svart: false, rekke: 0, besteRekke: 0 };
 
     function startQuiz() {
         qz.rekkefolge = stokk(SPM.map(function (_, i) { return i; }));
-        qz.nr = 0; qz.rette = 0;
+        qz.nr = 0; qz.rette = 0; qz.rekke = 0; qz.besteRekke = 0;
+        nyttSpm();
+    }
+
+    function nyttSpm() {
+        var s = SPM[qz.rekkefolge[qz.nr]];
+        qz.altOrd = stokk(s.a.map(function (_, i) { return i; }));
+        qz.valt = null;
+        qz.svart = false;
         visSpm();
     }
 
-    function visSpm() {
+    function visSpm(fokusAlt) {
         var idx = qz.rekkefolge[qz.nr];
         var s = SPM[idx];
-        qz.svart = false;
         var kort = $("quizKort");
         kort.textContent = "";
 
+        /* Topp: nummer, rekkje og rette */
         var topp = el("div", "quiz-topp");
         topp.appendChild(el("span", "", "Spørsmål " + (qz.nr + 1) + " av " + SPM.length));
-        var rette = el("span", "", "Rette denne runden: " + qz.rette);
-        topp.appendChild(rette);
+        var merke = el("div", "knapperad");
+        merke.style.gap = "8px";
+        if (qz.rekke >= 2) {
+            var fl = el("span", "quiz-merke flamme");
+            fl.appendChild(ikon("i-flamme"));
+            fl.appendChild(el("span", "", qz.rekke + " på rad"));
+            merke.appendChild(fl);
+        }
+        var rm = el("span", "quiz-merke");
+        rm.appendChild(ikon("i-hake"));
+        rm.appendChild(el("span", "", qz.rette + " rette"));
+        merke.appendChild(rm);
+        topp.appendChild(merke);
         kort.appendChild(topp);
 
-        var fr = el("div", "framdrift"); var f = el("div"); f.style.width = (qz.nr / SPM.length * 100) + "%"; fr.appendChild(f);
+        var fr = el("div", "framdrift");
+        var f = el("div");
+        f.style.width = ((qz.nr + (qz.svart ? 1 : 0)) / SPM.length * 100) + "%";
+        fr.appendChild(f);
         kort.appendChild(fr);
 
-        kort.appendChild(el("div", "quiz-spm", s.q));
+        var spm = el("div", "quiz-spm", s.q);
+        spm.id = "quizSpm";
+        kort.appendChild(spm);
 
+        /* Svaralternativ: vel og byt fritt til du trykker «Sjekk svar» */
         var alt = el("div", "svaralt");
-        var knappar = [];
-        var fb = el("div", "quiz-fb", "Vel eit svar.");
-        fb.setAttribute("aria-live", "polite");
-        var neste = el("button", "knapp", qz.nr === SPM.length - 1 ? "Sjå resultatet 🏁" : "Neste spørsmål ➜");
-        neste.type = "button";
-        neste.disabled = true;
-
-        stokk(s.a.map(function (_, i) { return i; })).forEach(function (ai) {
-            var b = el("button", "", s.a[ai]);
+        alt.setAttribute("role", "radiogroup");
+        alt.setAttribute("aria-labelledby", "quizSpm");
+        qz.altOrd.forEach(function (ai, pos) {
+            var b = el("button");
             b.type = "button";
+            b.setAttribute("role", "radio");
+            b.setAttribute("aria-checked", qz.valt === ai ? "true" : "false");
+            b.tabIndex = (qz.valt === ai || (qz.valt === null && pos === 0)) ? 0 : -1;
+            b.appendChild(el("span", "bokstav", BOKSTAVAR[pos]));
+            b.appendChild(el("span", "", s.a[ai]));
+            if (qz.svart) {
+                b.disabled = true;
+                if (ai === s.r) { b.classList.add("rett"); var m1 = el("span", "merknad"); m1.appendChild(ikon("i-hake")); b.appendChild(m1); }
+                else if (ai === qz.valt) { b.classList.add("feil"); var m2 = el("span", "merknad"); m2.appendChild(ikon("i-kryss")); b.appendChild(m2); }
+            }
             b.addEventListener("click", function () {
                 if (qz.svart) { return; }
-                qz.svart = true;
-                var rett = ai === s.r;
-                knappar.forEach(function (k) { k.b.disabled = true; if (k.i === s.r) { k.b.classList.add("rett"); } });
-                if (!rett) { b.classList.add("feil"); }
-                var nyttPoeng = false;
-                if (rett) {
-                    qz.rette++;
-                    rette.textContent = "Rette denne runden: " + qz.rette;
-                    if (state.quiz.indexOf(idx) === -1) { state.quiz.push(idx); lagre(); oppdaterTopp(); nyttPoeng = true; toast("🎉 +10 poeng!"); }
-                }
-                fb.className = "quiz-fb " + (rett ? "ok" : "nei");
-                fb.textContent = (rett ? "✅ Riktig! " + (nyttPoeng ? "+10 poeng. " : "(Du har allereie fått poeng for dette spørsmålet.) ") : "❌ Feil. ") + s.f;
-                neste.disabled = false;
-                neste.focus();
+                qz.valt = ai;
+                visSpm(ai);
             });
-            knappar.push({ b: b, i: ai });
+            b.addEventListener("keydown", function (e) {
+                if (qz.svart) { return; }
+                var n = null;
+                if (e.key === "ArrowDown" || e.key === "ArrowRight") { n = (pos + 1) % qz.altOrd.length; }
+                if (e.key === "ArrowUp" || e.key === "ArrowLeft") { n = (pos - 1 + qz.altOrd.length) % qz.altOrd.length; }
+                if (n !== null) { e.preventDefault(); qz.valt = qz.altOrd[n]; visSpm(qz.valt); }
+            });
+            b.setAttribute("data-ai", String(ai));
             alt.appendChild(b);
         });
         kort.appendChild(alt);
+
+        /* Tilbakemelding */
+        var fb = el("div", "quiz-fb");
+        fb.setAttribute("aria-live", "polite");
+        if (!qz.svart) {
+            fb.textContent = qz.valt === null ? "Vel eit svar." : "Du kan framleis byte svar. Trykk «Sjekk svar» når du er sikker.";
+        } else {
+            var rett = qz.valt === s.r;
+            fb.className = "quiz-fb " + (rett ? "ok" : "nei");
+            var sterk = el("strong", "", rett ? "Rett! " : "Feil. ");
+            fb.appendChild(sterk);
+            fb.appendChild(document.createTextNode((rett && qz.nyttPoeng ? "+10 poeng. " : "") + s.f));
+        }
         kort.appendChild(fb);
 
+        /* Knappar */
         var rad = el("div", "knapperad");
-        neste.addEventListener("click", function () {
-            if (qz.nr < SPM.length - 1) { qz.nr++; visSpm(); } else { sluttQuiz(); }
-        });
-        rad.appendChild(neste);
+        if (!qz.svart) {
+            var sjekk = knapp("knapp", "i-hake", "Sjekk svar");
+            sjekk.disabled = qz.valt === null;
+            sjekk.addEventListener("click", function () {
+                if (qz.valt === null) { return; }
+                qz.svart = true;
+                qz.nyttPoeng = false;
+                if (qz.valt === s.r) {
+                    qz.rette++;
+                    qz.rekke++;
+                    qz.besteRekke = Math.max(qz.besteRekke, qz.rekke);
+                    if (state.quiz.indexOf(idx) === -1) {
+                        state.quiz.push(idx); lagre(); oppdaterTopp(); qz.nyttPoeng = true;
+                        toast("+10 poeng!");
+                    }
+                } else {
+                    qz.rekke = 0;
+                }
+                visSpm();
+                var n = $("quizNeste");
+                if (n) { n.focus(); }
+            });
+            rad.appendChild(sjekk);
+        } else {
+            var siste = qz.nr === SPM.length - 1;
+            var neste = knapp("knapp", siste ? "i-pokal" : "i-pil-h", siste ? "Sjå resultatet" : "Neste spørsmål");
+            neste.id = "quizNeste";
+            neste.addEventListener("click", function () {
+                if (!siste) {
+                    qz.nr++;
+                    nyttSpm();
+                    var forste = document.querySelector(".svaralt button");
+                    if (forste) { forste.focus(); }
+                } else { sluttQuiz(); }
+            });
+            rad.appendChild(neste);
+        }
         kort.appendChild(rad);
+
+        if (fokusAlt !== undefined) {
+            var valt = kort.querySelector('.svaralt button[data-ai="' + fokusAlt + '"]');
+            if (valt) { valt.focus(); }
+        }
     }
 
     function sluttQuiz() {
         var n = SPM.length;
-        var melding, ikon;
-        if (qz.rette === n) { melding = "Perfekt! Du kan PowerShell!"; ikon = "🏆"; }
-        else if (qz.rette >= n * 0.8) { melding = "Veldig bra! Du kan mykje om PowerShell."; ikon = "😎"; }
-        else if (qz.rette >= n * 0.5) { melding = "Bra! Les nivåa ein gong til og prøv på nytt."; ikon = "🙂"; }
-        else { melding = "Ingen fare! Øv i terminalen og prøv ein gong til."; ikon = "💪"; }
+        var andel = qz.rette / n;
+        var melding;
+        if (qz.rette === n) { melding = "Perfekt! Du kan PowerShell!"; }
+        else if (andel >= 0.8) { melding = "Veldig bra! Du kan mykje om PowerShell."; }
+        else if (andel >= 0.5) { melding = "Bra jobba! Les nivåa ein gong til, så får du enda fleire rette."; }
+        else { melding = "Godt forsøk! Øv litt i terminalen og prøv igjen."; }
 
         var kort = $("quizKort");
         kort.textContent = "";
         var s = el("div", "quiz-slutt");
-        s.appendChild(el("h3", "", "Ferdig! " + ikon));
-        s.appendChild(el("div", "tal", qz.rette + " / " + n));
+        s.appendChild(el("h3", "", "Ferdig!"));
+
+        /* Ring som viser kor mange som var rette */
+        var omkrins = 2 * Math.PI * 70;
+        var ring = el("div", "ring");
+        ring.innerHTML =
+            '<svg viewBox="0 0 170 170" aria-hidden="true">' +
+            '<defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset=".5" stop-color="#0fb5ae"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>' +
+            '<circle class="bak" cx="85" cy="85" r="70"/>' +
+            '<circle class="fram" cx="85" cy="85" r="70" stroke-dasharray="' + omkrins + '" stroke-dashoffset="' + omkrins + '"/></svg>';
+        ring.appendChild(el("div", "tal", qz.rette + "/" + n));
+        ring.setAttribute("role", "img");
+        ring.setAttribute("aria-label", qz.rette + " av " + n + " rette");
+        s.appendChild(ring);
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                ring.querySelector(".fram").setAttribute("stroke-dashoffset", String(omkrins * (1 - andel)));
+            });
+        });
+
         s.appendChild(el("p", "stor", melding));
-        s.appendChild(el("p", "muted", "Totalt har du " + poeng() + " poeng i kurset, og " + state.quiz.length + " av " + n + " quizspørsmål er fullførte."));
+        s.appendChild(el("p", "muted", "Lengste rekkje med rette: " + qz.besteRekke + ". Du har no " + poeng() + " poeng totalt, og " + state.quiz.length + " av " + n + " quizspørsmål er fullførte."));
+
         var rad = el("div", "knapperad");
-        rad.style.justifyContent = "center";
-        var igjen = el("button", "knapp", "↺ Prøv igjen");
-        igjen.type = "button";
+        var igjen = knapp("knapp", "i-oppatt", "Prøv igjen");
         igjen.addEventListener("click", startQuiz);
-        var tilT = el("button", "knapp sek", "⌨️ Øv i terminalen");
-        tilT.type = "button";
+        var tilT = knapp("knapp sek", "i-terminal", "Øv i terminalen");
         tilT.addEventListener("click", function () { gaaTil("terminal"); });
-        rad.appendChild(igjen); rad.appendChild(tilT);
+        rad.appendChild(igjen);
+        rad.appendChild(tilT);
         s.appendChild(rad);
         kort.appendChild(s);
+        if (andel >= 0.8) { konfetti(90); }
     }
 
     /* =====================================================
@@ -1060,24 +1459,26 @@
             b.addEventListener("click", function () { gaaTil(b.getAttribute("data-visning")); });
         });
         $$("[data-gaa]").forEach(function (b) {
-            b.addEventListener("click", function () { gaaTil(b.getAttribute("data-gaa")); });
+            b.addEventListener("click", function (e) { e.preventDefault(); gaaTil(b.getAttribute("data-gaa")); });
         });
+        $("fortsetKnapp").addEventListener("click", fortset);
 
         $("nullAlt").addEventListener("click", function () {
             if (window.confirm("Vil du nullstille alle poeng og all framgang?")) {
-                state.nivaa = []; state.oppg = []; state.quiz = [];
-                opneHint = {};
+                state.nivaa = []; state.oppg = []; state.quiz = []; state.sist = 0;
+                hintNivaa = {}; fyllPos = {}; sjekkRett = {};
                 lagre();
-                oppdaterNivaa(); byggOppgaver(); oppdaterTopp(); startQuiz();
-                toast("Framgangen er nullstilt");
+                visNivaa(0); byggOppgaver(); oppdaterTopp(); startQuiz();
+                toast("Framgangen er nullstilt", "i-oppatt");
             }
         });
 
-        byggNivaa();
+        visNivaa(state.sist);
         byggOppgaver();
         startTerminal();
         startQuiz();
         oppdaterTopp();
+        startHeroDemo();
 
         var h = (location.hash || "").replace("#", "");
         gaaTil(VISNINGAR.indexOf(h) !== -1 ? h : "heim", false);
