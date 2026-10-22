@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="nn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kontrollspørsmål – VM i PROMPTING26</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            background-color: powderblue;
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        .topp {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+        .topp a { color: #0066cc; text-decoration: none; }
+        .topp a:hover { text-decoration: underline; }
+        .lite-knapp {
+            background: white;
+            border: 1px solid #9cc;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #333;
+        }
+        .kort {
+            flex: 1;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 32px 40px;
+            display: flex;
+            flex-direction: column;
+        }
+        .gruppe {
+            display: inline-block;
+            align-self: flex-start;
+            background: #e6f4f6;
+            color: #035;
+            font-weight: bold;
+            font-size: clamp(18px, 2.4vw, 26px);
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+        .gruppe.diskusjon { background: #fff3d6; color: #6a4a00; }
+        .teljar {
+            margin-top: 10px;
+            color: #777;
+            font-size: clamp(15px, 1.6vw, 18px);
+        }
+        .sporsmal {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            font-size: clamp(24px, 3.6vw, 44px);
+            line-height: 1.35;
+            padding: 28px 0;
+        }
+        .sporsmal p { margin: 0; }
+        code {
+            font-family: Consolas, "Courier New", monospace;
+            background: #f1f3f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+        .kode-linje {
+            display: block;
+            margin-top: 18px;
+            padding: 12px 16px;
+            font-size: 0.65em;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+        .navigasjon {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .nav-knapp {
+            font-size: 20px;
+            font-weight: bold;
+            padding: 14px 28px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background: #0066cc;
+            color: white;
+            min-width: 150px;
+        }
+        .nav-knapp.forrige { background: #e9eef3; color: #333; }
+        .nav-knapp:disabled { opacity: 0.35; cursor: default; }
+        .prikkar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+        }
+        .prikk {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #cfdde4;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        .prikk.diskusjon { background: #f0dfb4; }
+        .prikk.aktiv { background: #0066cc; transform: scale(1.3); }
+        .tips {
+            max-width: 1100px;
+            width: 100%;
+            margin: 10px auto 0;
+            text-align: center;
+            font-size: 13px;
+            color: #557;
+        }
+        @media (max-width: 640px) {
+            .kort { padding: 20px 18px; }
+            .nav-knapp { min-width: 0; padding: 12px 16px; font-size: 17px; }
+            .prikkar { display: none; }
+            .tips { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topp">
+        <a href="index.html">← Tilbake til VM i PROMPTING26</a>
+        <button class="lite-knapp" id="fullskjerm" type="button">Fullskjerm</button>
+    </div>
+
+    <main class="kort">
+        <div class="gruppe" id="gruppe"></div>
+        <div class="teljar" id="teljar"></div>
+        <div class="sporsmal" id="sporsmal" aria-live="polite"></div>
+        <div class="navigasjon">
+            <button class="nav-knapp forrige" id="forrige" type="button">← Førre</button>
+            <div class="prikkar" id="prikkar"></div>
+            <button class="nav-knapp" id="neste" type="button">Neste →</button>
+        </div>
+    </main>
+
+    <p class="tips">Bla med piltastane eller mellomrom. F gir fullskjerm.</p>
+
+    <script>
+    (function () {
+        "use strict";
+
+        var SPORSMAL = [
+            { gruppe: "Gruppe 1 – IP-adresse",
+              tekst: "Sida seier at 8.8.8.8 er det same som talet 134 744 072. Korleis blir fire tal til eitt stort tal?" },
+            { gruppe: "Gruppe 1 – IP-adresse",
+              tekst: "Sida seier at private adresser ikkje kan nåast frå internett, og at mange heimar brukar dei same 192.168.1.x-adressene. Når mobilen opnar nrk.no, korleis finn svaret vegen tilbake til akkurat den mobilen?" },
+            { gruppe: "Gruppe 2 – Ruter",
+              tekst: "Quizen dykkar seier at med nettmaske 255.255.255.0 kan berre 254 adresser brukast av einingar, ikkje 256. Kvifor?" },
+            { gruppe: "Gruppe 2 – Ruter",
+              tekst: "Sida seier at mottakaren ber om å få tilsendt pakkar som har kome bort. Gjeld det òg for ein videosamtale eller eit nettspel?" },
+            { gruppe: "Gruppe 3 – 2FA",
+              tekst: "Authenticator-appen på mobilen har ikkje kontakt med banken når han lagar koden. Korleis kan banken likevel vite kva kode som er rett akkurat no?" },
+            { gruppe: "Gruppe 3 – 2FA",
+              tekst: "Passordtesten reknar med 10 milliardar gjetningar i sekundet. Men ei vanleg innloggingsside stengjer etter nokre få feil forsøk. Korleis kan ein angripar då gjette så fort?" },
+            { gruppe: "Gruppe 4 – Brannmur",
+              tekst: "Den viktigaste regelen på sida er «slepp inn svar på det du sjølv bad om». Men ein pakke er berre ein pakke. Korleis kan brannmuren vite at ein pakke som kjem inn, er eit svar på noko du bad om, og ikkje eit angrep?" },
+            { gruppe: "Gruppe 4 – Brannmur",
+              tekst: "Sida seier at port 23 og 3389 er risikable, medan 443 og 993 er trygge. Kva er det som gjer ein port farleg?" },
+            { gruppe: "Gruppe 5 – DNS",
+              tekst: "I animasjonen dykkar veit ikkje rot-serveren IP-adressa til nrk.no. Han viser berre vidare. Kvifor er DNS bygd i fleire lag, i staden for éin stor server som veit alt?" },
+            { gruppe: "Gruppe 5 – DNS",
+              tekst: "Sida seier at nrk.no har adressa 160.68.205.231. Korleis kan de sjekke at det stemmer?" },
+            { gruppe: "Gruppe 6 – PowerShell",
+              tekst: "Forklar kva denne linja frå sida dykkar gjer:",
+              kode: "foreach ($tal in 1..3) { Write-Host \"Runde $tal\" }" },
+            { gruppe: "Gruppe 6 – PowerShell",
+              tekst: "Terminalen dykkar har både [Write-Host] og [Write-Output], og hjelpeteksten seier at [Write-Output] «sender tekst ut frå kommandoen». Kva er skilnaden, når begge ser ut til å skrive tekst på skjermen?" },
+            { gruppe: "Til diskusjon", diskusjon: true,
+              tekst: "Kva seier svara i dag om kven som eigentleg har laga innhaldet?" },
+            { gruppe: "Til diskusjon", diskusjon: true,
+              tekst: "Viss noko på sida var feil, kven ville ha oppdaga det?" },
+            { gruppe: "Til diskusjon", diskusjon: true,
+              tekst: "Korleis kunne de ha testa innhaldet før publisering?" },
+            { gruppe: "Til diskusjon", diskusjon: true,
+              tekst: "Kva bør ein utviklar kunne sjølv, når KI skriv både koden og teksten?" }
+        ];
+
+        var $ = function (id) { return document.getElementById(id); };
+        var ANTAL_KONTROLL = SPORSMAL.filter(function (s) { return !s.diskusjon; }).length;
+        var ANTAL_DISKUSJON = SPORSMAL.length - ANTAL_KONTROLL;
+        var nr = 0;
+
+        /* Lagar tekst med [kode] som <code>, utan å bruke innerHTML på teksten. */
+        function lagTekst(tekst, mal) {
+            tekst.split(/(\[[^\]]+\])/).forEach(function (bit) {
+                if (!bit) { return; }
+                if (bit.charAt(0) === "[" && bit.charAt(bit.length - 1) === "]") {
+                    var c = document.createElement("code");
+                    c.textContent = bit.slice(1, -1);
+                    mal.appendChild(c);
+                } else {
+                    mal.appendChild(document.createTextNode(bit));
+                }
+            });
+        }
+
+        /* Prikkar for å hoppe direkte til eit spørsmål */
+        var prikkar = SPORSMAL.map(function (s, i) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.className = "prikk" + (s.diskusjon ? " diskusjon" : "");
+            b.setAttribute("aria-label", (s.diskusjon ? "Diskusjon " : "Spørsmål ") + (i + 1));
+            b.addEventListener("click", function () { visSporsmal(i); });
+            $("prikkar").appendChild(b);
+            return b;
+        });
+
+        function visSporsmal(i) {
+            nr = Math.max(0, Math.min(SPORSMAL.length - 1, i));
+            var s = SPORSMAL[nr];
+
+            $("gruppe").textContent = s.gruppe;
+            $("gruppe").className = "gruppe" + (s.diskusjon ? " diskusjon" : "");
+            $("teljar").textContent = s.diskusjon
+                ? "Diskusjonsspørsmål " + (nr - ANTAL_KONTROLL + 1) + " av " + ANTAL_DISKUSJON
+                : "Spørsmål " + (nr + 1) + " av " + ANTAL_KONTROLL;
+
+            var boks = $("sporsmal");
+            boks.textContent = "";
+            var p = document.createElement("p");
+            lagTekst(s.tekst, p);
+            if (s.kode) {
+                var k = document.createElement("code");
+                k.className = "kode-linje";
+                k.textContent = s.kode;
+                p.appendChild(k);
+            }
+            boks.appendChild(p);
+
+            $("forrige").disabled = nr === 0;
+            $("neste").disabled = nr === SPORSMAL.length - 1;
+            prikkar.forEach(function (b, j) { b.classList.toggle("aktiv", j === nr); });
+
+            try { history.replaceState(null, "", "#" + (nr + 1)); } catch (e) { /* ikkje viktig */ }
+        }
+
+        $("forrige").addEventListener("click", function () { visSporsmal(nr - 1); });
+        $("neste").addEventListener("click", function () { visSporsmal(nr + 1); });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.ctrlKey || e.metaKey || e.altKey) { return; }
+            var k = e.key;
+            if (k === "ArrowRight" || k === "PageDown" || k === " ") { e.preventDefault(); visSporsmal(nr + 1); }
+            else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); visSporsmal(nr - 1); }
+            else if (k === "Home") { e.preventDefault(); visSporsmal(0); }
+            else if (k === "End") { e.preventDefault(); visSporsmal(SPORSMAL.length - 1); }
+            else if (k === "f" || k === "F") { vekslaFullskjerm(); }
+        });
+
+        function vekslaFullskjerm() {
+            if (!document.fullscreenElement) {
+                if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(function () {}); }
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+        $("fullskjerm").addEventListener("click", vekslaFullskjerm);
+        document.addEventListener("fullscreenchange", function () {
+            $("fullskjerm").textContent = document.fullscreenElement ? "Avslutt fullskjerm" : "Fullskjerm";
+        });
+
+        /* Start på spørsmålet i adresselinja (t.d. kontroll.html#5), elles på det første */
+        var start = parseInt((location.hash || "").replace("#", ""), 10);
+        visSporsmal(isNaN(start) ? 0 : start - 1);
+    })();
+    </script>
+</body>
+</html>
