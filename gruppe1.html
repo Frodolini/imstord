@@ -1,372 +1,887 @@
 <!DOCTYPE html>
-<html lang="nn">
+<html lang="nn" data-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0b0f1a">
-    <title>Gruppe 1: IP-adresse</title>
+    <meta name="theme-color" content="#f5f7ff">
+    <meta name="description" content="Lær om IP-adresser: sjå di eiga IP, søk opp adresser, sjekk om ei adresse er gyldig og ta quizen. Laga for 10. trinn.">
+    <title>IP-guiden · Gruppe 1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        /* Set tema før sida teiknar, så ho ikkje blinkar */
+        (function () {
+            try {
+                var t = localStorage.getItem("ipguide-tema");
+                if (t === "dark" || t === "light") { document.documentElement.setAttribute("data-theme", t); }
+            } catch (e) { /* lagring ikkje tilgjengeleg – bruk lyst tema */ }
+        })();
+    </script>
     <style>
+        /* ================= FARGAR OG TEMA ================= */
         :root {
-            --bg: #0b0f1a;
-            --bg-2: #111827;
-            --card: #151d30;
-            --line: #26334f;
-            --accent: #22d3ee;
-            --accent-2: #818cf8;
-            --text: #e8eefc;
-            --muted: #98a6c4;
-            --ok: #34d399;
-            --warn: #fbbf24;
-            --bad: #f87171;
-            --radius: 16px;
+            --bg: #f5f7ff;
+            --bg-2: #ffffff;
+            --card: #ffffff;
+            --card-2: #f1f4ff;
+            --line: #dde3f5;
+            --text: #1b1f3b;
+            --muted: #5b6488;
+            --blue: #2563eb;
+            --violet: #7c3aed;
+            --pink: #db2777;
+            --orange: #ea580c;
+            --teal: #0d9488;
+            --yellow: #f59e0b;
+            --ok: #059669;
+            --ok-bg: #d1fae5;
+            --bad: #dc2626;
+            --bad-bg: #fee2e2;
+            --info-bg: #fef3c7;
+            --info-text: #78350f;
+            --load-bg: #ede9fe;
+            --code-bg: #eef2ff;
+            --shadow: 0 10px 30px rgba(37, 50, 120, 0.10);
+            --shadow-lg: 0 18px 50px rgba(37, 50, 120, 0.16);
+            --blob-1: rgba(124, 58, 237, 0.18);
+            --blob-2: rgba(14, 165, 233, 0.18);
+            --blob-3: rgba(236, 72, 153, 0.14);
+            --radius: 20px;
+            --mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+            color-scheme: light;
         }
+        :root[data-theme="dark"] {
+            --bg: #0c1022;
+            --bg-2: #121834;
+            --card: #161d3d;
+            --card-2: #1d2650;
+            --line: #2b3668;
+            --text: #eef1ff;
+            --muted: #a3acd6;
+            --blue: #60a5fa;
+            --violet: #a78bfa;
+            --pink: #f472b6;
+            --orange: #fb923c;
+            --teal: #2dd4bf;
+            --yellow: #fbbf24;
+            --ok: #34d399;
+            --ok-bg: rgba(52, 211, 153, 0.14);
+            --bad: #f87171;
+            --bad-bg: rgba(248, 113, 113, 0.14);
+            --info-bg: rgba(251, 191, 36, 0.14);
+            --info-text: #fde68a;
+            --load-bg: rgba(167, 139, 250, 0.16);
+            --code-bg: #0b1030;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.45);
+            --blob-1: rgba(124, 58, 237, 0.28);
+            --blob-2: rgba(14, 165, 233, 0.20);
+            --blob-3: rgba(236, 72, 153, 0.16);
+            color-scheme: dark;
+        }
+
+        /* ================= GRUNNOPPSETT ================= */
         * { box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; scroll-padding-top: 84px; }
         body {
             margin: 0;
             background:
-                radial-gradient(900px 500px at 85% -100px, rgba(129, 140, 248, 0.22), transparent 60%),
-                radial-gradient(900px 500px at 0% -150px, rgba(34, 211, 238, 0.18), transparent 60%),
+                radial-gradient(700px 420px at 90% -80px, var(--blob-1), transparent 65%),
+                radial-gradient(700px 420px at -5% 0px, var(--blob-2), transparent 65%),
+                radial-gradient(600px 400px at 50% 110%, var(--blob-3), transparent 65%),
                 var(--bg);
             background-attachment: fixed;
             color: var(--text);
-            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+            font-family: "Nunito", "Segoe UI", Roboto, Arial, sans-serif;
             font-size: 17px;
             line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: clip;
         }
-        .wrap { max-width: 980px; margin: 0 auto; padding: 0 18px 40px; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px 48px; }
+        h1, h2, h3 { line-height: 1.15; }
+        h2 { margin: 0 0 6px; font-size: clamp(26px, 4.6vw, 36px); font-weight: 900; }
+        h3 { margin: 0 0 8px; font-size: 20px; font-weight: 800; }
+        p { margin: 0 0 12px; }
+        a { color: var(--blue); }
+        section { margin-top: 56px; }
+        .seksjonstopp { text-align: center; margin-bottom: 22px; }
+        .seksjonstopp p { color: var(--muted); max-width: 620px; margin: 0 auto; }
+        .kode {
+            font-family: var(--mono); font-size: 0.92em; background: var(--code-bg);
+            border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--violet);
+            white-space: nowrap;
+        }
+        .skjult-etikett { position: absolute; left: -9999px; }
+        button, input, select { font: inherit; }
+        button:focus-visible, input:focus-visible, a:focus-visible, select:focus-visible {
+            outline: 3px solid var(--yellow); outline-offset: 2px;
+        }
 
-        /* Toppmeny */
+        /* ================= TOPPLINJE ================= */
         .topp {
-            display: flex; justify-content: space-between; align-items: center;
-            gap: 12px; padding: 16px 0; flex-wrap: wrap;
+            position: sticky; top: 0; z-index: 50;
+            background: color-mix(in srgb, var(--bg) 82%, transparent);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--line);
         }
-        .logo { font-weight: 800; letter-spacing: 0.5px; }
-        .logo span { color: var(--accent); }
-        .topp nav { display: flex; gap: 14px; flex-wrap: wrap; font-size: 15px; }
-        .topp nav a { color: var(--muted); text-decoration: none; }
-        .topp nav a:hover { color: var(--accent); }
-
-        /* Hero */
-        .hero { text-align: center; padding: 28px 0 8px; }
-        .merke {
-            display: inline-block; padding: 4px 14px; border-radius: 999px;
-            border: 1px solid var(--line); color: var(--accent); font-size: 14px;
-            background: rgba(34, 211, 238, 0.08);
+        .topp-inner {
+            max-width: 1100px; margin: 0 auto; padding: 10px 16px;
+            display: flex; align-items: center; gap: 14px;
         }
-        h1 {
-            margin: 14px 0 10px; font-size: clamp(32px, 7vw, 54px); line-height: 1.1;
-        }
-        h1 .grad {
-            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        .logo { font-weight: 900; font-size: 20px; text-decoration: none; color: var(--text); white-space: nowrap; }
+        .logo span {
+            background: linear-gradient(90deg, var(--blue), var(--pink));
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
-        .hero p.lead { max-width: 640px; margin: 0 auto 22px; color: var(--muted); font-size: 19px; }
+        .meny { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+        .meny a {
+            color: var(--muted); text-decoration: none; font-weight: 700; font-size: 15px;
+            padding: 6px 12px; border-radius: 999px; transition: background 0.2s, color 0.2s;
+        }
+        .meny a:hover { background: var(--card-2); color: var(--text); }
+        .temaknapp {
+            flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px;
+            min-height: 44px; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+            border: 2px solid var(--line); background: var(--card); color: var(--text);
+            font-weight: 800; font-size: 15px; box-shadow: var(--shadow);
+            transition: transform 0.15s, border-color 0.2s;
+        }
+        .temaknapp:hover { border-color: var(--violet); }
+        .temaknapp:active { transform: scale(0.96); }
+        .temaknapp .ikon { font-size: 18px; }
 
+        /* ================= KNAPPAR ================= */
         .knapp {
-            min-height: 52px; padding: 12px 24px; font: inherit; font-weight: 700;
-            border: 0; border-radius: 12px; cursor: pointer; color: #04121c;
-            background: linear-gradient(90deg, var(--accent), #60a5fa);
-            transition: transform 0.1s, box-shadow 0.2s, opacity 0.2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            min-height: 50px; padding: 12px 22px; font-weight: 800; font-size: 17px;
+            border: 0; border-radius: 14px; cursor: pointer; color: #fff;
+            background: linear-gradient(135deg, var(--blue), var(--violet));
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.30);
+            transition: transform 0.12s, box-shadow 0.2s, opacity 0.2s, filter 0.2s;
         }
-        .knapp:hover { box-shadow: 0 0 24px rgba(34, 211, 238, 0.45); }
+        .knapp:hover { filter: brightness(1.08); box-shadow: 0 10px 26px rgba(79, 70, 229, 0.40); }
         .knapp:active { transform: scale(0.97); }
-        .knapp:disabled { opacity: 0.55; cursor: wait; box-shadow: none; }
-        .knapp.stor { font-size: 20px; padding: 16px 36px; min-height: 60px; }
+        .knapp:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.3); box-shadow: none; }
+        .knapp.laster { cursor: wait; }
         .knapp.sek {
-            background: transparent; color: var(--text); border: 2px solid var(--line);
+            background: var(--card); color: var(--text); border: 2px solid var(--line); box-shadow: none;
         }
-        .knapp.sek:hover { border-color: var(--accent); box-shadow: none; }
-        button:focus-visible, input:focus-visible, a:focus-visible {
-            outline: 3px solid var(--warn); outline-offset: 2px;
-        }
-        .smaatekst { color: var(--muted); font-size: 14px; margin-top: 10px; }
+        .knapp.sek:hover { border-color: var(--violet); }
+        .knapp.raud { background: linear-gradient(135deg, var(--pink), var(--orange)); box-shadow: 0 8px 20px rgba(219, 39, 119, 0.28); }
 
-        /* Status */
+        /* ================= HERO ================= */
+        .hero { text-align: center; padding: 40px 0 6px; }
+        .merke {
+            display: inline-flex; gap: 6px; align-items: center; padding: 5px 14px; border-radius: 999px;
+            background: var(--card); border: 1px solid var(--line); color: var(--violet);
+            font-weight: 800; font-size: 14px; box-shadow: var(--shadow);
+        }
+        h1 { margin: 16px 0 12px; font-size: clamp(36px, 8vw, 66px); font-weight: 900; letter-spacing: -1px; }
+        h1 .grad {
+            background: linear-gradient(90deg, var(--blue), var(--violet) 45%, var(--pink) 80%, var(--orange));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .lead { max-width: 640px; margin: 0 auto 26px; color: var(--muted); font-size: clamp(17px, 2.4vw, 20px); }
+        .hovudknapp {
+            position: relative; font-size: clamp(20px, 3.4vw, 24px); padding: 18px 42px; min-height: 68px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed 50%, #db2777);
+            background-size: 200% 200%; animation: glid 6s ease infinite;
+            box-shadow: 0 14px 34px rgba(124, 58, 237, 0.40);
+        }
+        .hovudknapp::after {
+            content: ""; position: absolute; inset: -6px; border-radius: 26px;
+            border: 3px solid rgba(124, 58, 237, 0.35); animation: puls 2.2s ease-out infinite; pointer-events: none;
+        }
+        .hovudknapp:disabled::after { display: none; }
+        @keyframes glid { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes puls { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.12); } }
+        .smaatekst { color: var(--muted); font-size: 14px; margin: 12px auto 0; max-width: 560px; }
+
+        /* Spinnar */
+        .spinnar {
+            width: 20px; height: 20px; border-radius: 50%; display: inline-block;
+            border: 3px solid rgba(255, 255, 255, 0.4); border-top-color: #fff; animation: snu 0.8s linear infinite;
+        }
+        @keyframes snu { to { transform: rotate(360deg); } }
+
+        /* ================= STATUS ================= */
         .status {
-            margin: 18px auto 0; max-width: 640px; padding: 12px 16px; border-radius: 12px;
-            display: none; text-align: left;
+            margin: 16px auto 0; max-width: 680px; padding: 12px 16px; border-radius: 14px;
+            display: none; text-align: left; font-weight: 600;
         }
-        .status.vis { display: block; }
-        .status.laster { background: rgba(129, 140, 248, 0.12); border: 1px solid var(--accent-2); }
-        .status.feil { background: rgba(248, 113, 113, 0.12); border: 1px solid var(--bad); color: #fecaca; }
-        .status.info { background: rgba(251, 191, 36, 0.12); border: 1px solid var(--warn); color: #fde68a; }
+        .status.vis { display: block; animation: inn 0.3s ease; }
+        .status.laster { background: var(--load-bg); border: 1px solid var(--violet); }
+        .status.feil { background: var(--bad-bg); border: 1px solid var(--bad); color: var(--bad); }
+        .status.info { background: var(--info-bg); border: 1px solid var(--yellow); color: var(--info-text); }
 
-        /* Kort */
+        /* ================= KORT ================= */
         .kort {
-            background: var(--card); border: 1px solid var(--line);
-            border-radius: var(--radius); padding: 20px;
-        }
-        h2 { margin: 0 0 6px; font-size: clamp(22px, 4.5vw, 30px); }
-        h3 { margin: 0 0 6px; font-size: 18px; color: var(--accent); }
-        p { margin: 0 0 12px; }
-        section { margin-top: 34px; }
-        .kode {
-            font-family: Consolas, "Courier New", monospace; background: #0a1120;
-            border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--accent);
+            background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+            padding: 22px; box-shadow: var(--shadow);
         }
 
-        /* Detaljboks */
-        #detaljar { display: none; margin-top: 26px; }
-        #detaljar.vis { display: block; animation: inn 0.4s ease; }
-        @keyframes inn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-        .ip-stor {
-            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-            gap: 12px; margin-bottom: 14px;
+        /* ================= RESULTATKORT ================= */
+        .resultat { display: none; margin: 22px auto 0; max-width: 900px; text-align: left; }
+        .resultat.vis { display: block; animation: inn 0.45s ease; }
+        @keyframes inn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+        .resultat .kort { position: relative; overflow: hidden; }
+        .resultat .kort::before {
+            content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px;
+            background: linear-gradient(90deg, var(--blue), var(--violet), var(--pink), var(--orange), var(--yellow));
         }
-        .ip-stor .tal {
-            font-family: Consolas, "Courier New", monospace; font-weight: 700;
-            font-size: clamp(24px, 6vw, 42px); color: var(--ok); word-break: break-all;
+        .ip-topp { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+        .ip-topp small { display: block; color: var(--muted); font-weight: 700; font-size: 14px; }
+        .ip-topp .tal {
+            font-family: var(--mono); font-weight: 700; font-size: clamp(22px, 5.5vw, 40px);
+            color: var(--ok); word-break: break-all; line-height: 1.2;
         }
-        .ip-stor small { display: block; color: var(--muted); font-size: 14px; }
-        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+        .ip-knappar { display: flex; gap: 8px; flex-wrap: wrap; }
+        .ip-knappar .knapp { min-height: 44px; padding: 8px 16px; font-size: 15px; }
+        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
         .chip {
-            padding: 2px 12px; border-radius: 999px; font-size: 14px;
-            border: 1px solid var(--line); background: var(--bg-2); color: var(--muted);
+            padding: 3px 12px; border-radius: 999px; font-size: 14px; font-weight: 800;
+            background: var(--card-2); color: var(--muted); border: 1px solid var(--line);
         }
-        .chip.accent { color: var(--accent); border-color: var(--accent); }
+        .chip.bla { color: var(--blue); border-color: var(--blue); }
+        .chip.gron { color: var(--ok); border-color: var(--ok); }
+        .chip.rosa { color: var(--pink); border-color: var(--pink); }
         .rutenett { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .celle {
-            background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px;
-        }
-        .celle .etikett { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
-        .celle .verdi { font-size: 19px; font-weight: 600; word-break: break-word; }
+        .celle { background: var(--card-2); border-radius: 14px; padding: 14px; border: 1px solid var(--line); }
+        .celle .etikett { color: var(--muted); font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; }
+        .celle .verdi { font-size: 18px; font-weight: 800; word-break: break-word; }
 
-        /* Søkefelt */
-        .sok { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-        .sok input {
-            flex: 1 1 240px; min-height: 52px; padding: 10px 14px; font: inherit; font-size: 18px;
-            color: var(--text); background: #0a1120; border: 2px solid var(--line); border-radius: 12px;
-            font-family: Consolas, "Courier New", monospace;
+        /* ================= VERKTØY ================= */
+        .verktoy { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .verktoy .kort { display: flex; flex-direction: column; }
+        .verktoy-ikon {
+            width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center;
+            font-size: 26px; margin-bottom: 10px; color: #fff;
         }
-        .sok input:focus { border-color: var(--accent); }
-        .eksempel { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; color: var(--muted); font-size: 15px; }
+        .ikon-bla { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
+        .ikon-gron { background: linear-gradient(135deg, #10b981, #0d9488); }
+        .ikon-rosa { background: linear-gradient(135deg, #ec4899, #f97316); }
+        .ikon-gul { background: linear-gradient(135deg, #f59e0b, #ea580c); }
+        .ikon-lilla { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+        .verktoy p.sub { color: var(--muted); }
+        .felt { display: flex; flex-wrap: wrap; gap: 10px; }
+        .felt input {
+            flex: 1 1 200px; min-width: 0; min-height: 52px; padding: 10px 14px; font-size: 18px;
+            font-family: var(--mono); color: var(--text); background: var(--code-bg);
+            border: 2px solid var(--line); border-radius: 14px; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .felt input:focus { outline: none; border-color: var(--violet); box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.18); }
+        .felt input.gyldig { border-color: var(--ok); }
+        .felt input.ugyldig { border-color: var(--bad); }
+        .eksempel { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+        .eksempel .tittel { color: var(--muted); font-weight: 800; font-size: 14px; margin-right: 2px; }
         .eksempel button {
-            min-height: 40px; padding: 4px 14px; border-radius: 999px; cursor: pointer; font: inherit;
-            font-family: Consolas, "Courier New", monospace; font-size: 15px;
-            color: var(--text); background: var(--bg-2); border: 1px solid var(--accent-2);
+            min-height: 40px; padding: 4px 14px; border-radius: 999px; cursor: pointer;
+            font-size: 14px; font-weight: 800; color: var(--text);
+            background: var(--card-2); border: 2px solid var(--line); transition: border-color 0.2s, transform 0.1s;
         }
-        .eksempel button:hover { background: rgba(129, 140, 248, 0.2); }
+        .eksempel button:hover { border-color: var(--violet); }
+        .eksempel button:active { transform: scale(0.96); }
+        .eksempel button .m { font-family: var(--mono); color: var(--violet); font-weight: 700; }
+        #sokResultat { margin-top: 16px; max-width: none; }
 
-        /* Pedagogisk */
-        .to-kol { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .oktettar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0; font-family: Consolas, "Courier New", monospace; }
-        .okt {
-            padding: 8px 14px; border-radius: 10px; font-size: 22px; font-weight: 700;
-            background: var(--bg-2); border: 1px solid var(--accent); color: var(--accent);
+        /* Validator */
+        .val-svar { margin-top: 14px; border-radius: 16px; padding: 16px; border: 2px dashed var(--line); min-height: 96px; }
+        .val-svar.ok { border-style: solid; border-color: var(--ok); background: var(--ok-bg); }
+        .val-svar.feil { border-style: solid; border-color: var(--bad); background: var(--bad-bg); }
+        .val-tittel { font-weight: 900; font-size: 19px; margin-bottom: 6px; }
+        .val-svar.ok .val-tittel { color: var(--ok); }
+        .val-svar.feil .val-tittel { color: var(--bad); }
+        .val-svar ul { margin: 8px 0 0; padding-left: 20px; }
+        .val-svar li { margin-bottom: 4px; }
+        .delar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 10px 0 4px; font-family: var(--mono); }
+        .del {
+            min-width: 46px; text-align: center; padding: 6px 10px; border-radius: 10px; font-weight: 700; font-size: 18px;
+            border: 2px solid var(--ok); color: var(--ok); background: var(--card);
         }
-        .oktettar .punkt { font-size: 24px; color: var(--muted); }
-        .v6 { font-family: Consolas, "Courier New", monospace; font-size: 15px; word-break: break-all; color: var(--accent-2); }
+        .del.feil { border-color: var(--bad); color: var(--bad); }
+        .del.tom { color: var(--muted); font-style: italic; }
+        .delar .prikk { font-size: 22px; color: var(--muted); font-weight: 700; }
+        .binar { font-family: var(--mono); font-size: 14px; color: var(--muted); word-break: break-all; margin-top: 6px; }
+
+        /* ================= FANER (LÆR) ================= */
+        .faner {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;
+        }
+        .fane {
+            display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+            padding: 16px 10px; border-radius: 18px; cursor: pointer; font-weight: 800; font-size: 16px;
+            color: var(--text); background: var(--card); border: 2px solid var(--line); box-shadow: var(--shadow);
+            transition: transform 0.15s, border-color 0.2s, background 0.2s;
+        }
+        .fane .emoji { font-size: 32px; line-height: 1; }
+        .fane:hover { transform: translateY(-3px); border-color: var(--fanefarge, var(--violet)); }
+        .fane[aria-selected="true"] {
+            color: #fff; border-color: transparent; transform: translateY(-3px);
+            background: var(--fanegrad, linear-gradient(135deg, var(--blue), var(--violet)));
+            box-shadow: var(--shadow-lg);
+        }
+        .fane[data-farge="bla"] { --fanefarge: #2563eb; --fanegrad: linear-gradient(135deg, #0ea5e9, #2563eb); }
+        .fane[data-farge="lilla"] { --fanefarge: #7c3aed; --fanegrad: linear-gradient(135deg, #8b5cf6, #6366f1); }
+        .fane[data-farge="gron"] { --fanefarge: #0d9488; --fanegrad: linear-gradient(135deg, #10b981, #0d9488); }
+        .fane[data-farge="rosa"] { --fanefarge: #db2777; --fanegrad: linear-gradient(135deg, #ec4899, #f97316); }
+        .panel { display: none; }
+        .panel.vis { display: block; animation: inn 0.35s ease; }
+        .panel .kort { padding: 26px; }
+        .panel h3 { font-size: 24px; }
+        .to-kol { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .boks { background: var(--card-2); border-radius: 16px; padding: 16px; border: 1px solid var(--line); }
+        .boks h4 { margin: 0 0 6px; font-size: 18px; }
+        .metafor {
+            display: flex; gap: 14px; align-items: flex-start; padding: 16px; border-radius: 16px; margin: 14px 0;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(236, 72, 153, 0.10));
+            border: 1px solid rgba(245, 158, 11, 0.45);
+        }
+        .metafor .stor-emoji { font-size: 34px; line-height: 1; }
+        .metafor p { margin: 0; }
+
+        /* Flytdiagram: pakke på veg */
+        .flyt { display: flex; align-items: stretch; justify-content: space-between; gap: 6px; margin: 18px 0 8px; }
+        .stopp {
+            flex: 1 1 0; text-align: center; padding: 12px 6px; border-radius: 16px;
+            background: var(--card-2); border: 2px solid var(--line); min-width: 0;
+        }
+        .stopp .e { font-size: 30px; display: block; }
+        .stopp b { display: block; font-size: 15px; }
+        .stopp small { display: block; color: var(--muted); font-size: 13px; line-height: 1.3; }
+        .stopp .m { font-family: var(--mono); font-size: 12px; color: var(--violet); word-break: break-all; }
+        .pil { align-self: center; font-size: 22px; color: var(--muted); flex: 0 0 auto; }
+        .flyt-knapp { margin-top: 6px; }
+        .stopp.aktiv { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.18); transform: translateY(-2px); transition: all 0.25s; }
+        .flyt-tekst { min-height: 26px; font-weight: 700; color: var(--pink); text-align: center; }
+
+        /* Oktettar */
+        .oktettar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0; font-family: var(--mono); }
+        .okt {
+            padding: 8px 14px; border-radius: 12px; font-size: 22px; font-weight: 700; color: #fff;
+        }
+        .okt:nth-child(1) { background: #2563eb; }
+        .okt:nth-child(3) { background: #7c3aed; }
+        .okt:nth-child(5) { background: #db2777; }
+        .okt:nth-child(7) { background: #ea580c; }
+        .oktettar .punkt { font-size: 26px; color: var(--muted); font-weight: 700; }
+        .v6 { font-family: var(--mono); font-size: 15px; word-break: break-all; color: var(--violet); font-weight: 700; }
+
+        /* Søylesamanlikning */
+        .soyler { margin: 16px 0 4px; display: grid; gap: 10px; }
+        .soyle-rad { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center; }
+        .soyle-rad span { font-weight: 800; font-size: 15px; }
+        .soyle { height: 30px; border-radius: 10px; display: flex; align-items: center; padding: 0 10px; color: #fff; font-weight: 800; font-size: 14px; white-space: nowrap; width: 0; transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
+        .soyle.a { background: linear-gradient(90deg, #0ea5e9, #2563eb); }
+        .soyle.b { background: linear-gradient(90deg, #f59e0b, #ea580c); }
+        .soyle.c { background: linear-gradient(90deg, #ec4899, #db2777); }
+
         table { width: 100%; border-collapse: collapse; font-size: 16px; }
         th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
         th { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
-        .tips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-        .tips .kort { padding: 16px; }
-        .tips .ikon { font-size: 28px; }
+        td:first-child { font-weight: 800; }
+        .tabell-wrap { overflow-x: auto; }
 
-        footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: 14px; }
-        footer a { color: var(--accent); }
-
-        @media (max-width: 720px) {
-            .rutenett, .to-kol, .tips { grid-template-columns: 1fr; }
-            .topp { justify-content: center; }
-            .knapp.stor { width: 100%; }
+        /* Blokk-illustrasjon */
+        .blokk { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; margin: 14px 0; }
+        .hus {
+            border: 3px solid var(--teal); border-radius: 14px; padding: 12px; text-align: center; min-width: 210px;
+            background: var(--card-2);
         }
-        @media (min-width: 721px) and (max-width: 900px) {
+        .hus .tak { font-weight: 900; color: var(--teal); font-family: var(--mono); font-size: 15px; }
+        .hus .rom { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+        .hus .rom div { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 13px; }
+        .hus .rom div b { display: block; font-family: var(--mono); font-size: 12px; color: var(--violet); }
+
+        .tips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 14px; }
+        .tips .boks .ikon { font-size: 28px; }
+
+        /* ================= FAKTA ================= */
+        .fakta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .faktakort {
+            position: relative; min-height: 200px; perspective: 1000px; cursor: pointer;
+            border: 0; padding: 0; background: none; text-align: left; color: inherit;
+        }
+        .faktakort .inni {
+            position: absolute; inset: 0; transition: transform 0.6s; transform-style: preserve-3d;
+        }
+        .faktakort.snudd .inni { transform: rotateY(180deg); }
+        .side {
+            position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+            border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; justify-content: center;
+            box-shadow: var(--shadow);
+        }
+        .side.fram { color: #fff; align-items: center; text-align: center; gap: 6px; }
+        .side.fram .e { font-size: 42px; line-height: 1; }
+        .side.fram b { font-size: 20px; font-weight: 900; }
+        .side.fram small { opacity: 0.9; font-weight: 700; }
+        .side.bak { transform: rotateY(180deg); background: var(--card); border: 2px solid var(--line); font-size: 16px; }
+        .side.bak p { margin: 0; }
+        .f1 .fram { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
+        .f2 .fram { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+        .f3 .fram { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .f4 .fram { background: linear-gradient(135deg, #f59e0b, #ea580c); }
+        .f5 .fram { background: linear-gradient(135deg, #10b981, #0d9488); }
+        .f6 .fram { background: linear-gradient(135deg, #6366f1, #db2777); }
+
+        /* ================= QUIZ ================= */
+        .quiz { max-width: 760px; margin: 0 auto; }
+        .quiz .kort { padding: 26px; }
+        .quiz-topp { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; font-weight: 800; color: var(--muted); }
+        .framdrift { height: 12px; border-radius: 999px; background: var(--card-2); overflow: hidden; border: 1px solid var(--line); margin-bottom: 20px; }
+        .framdrift div { height: 100%; width: 0; background: linear-gradient(90deg, var(--blue), var(--violet), var(--pink)); transition: width 0.4s; }
+        .sporsmal { font-size: clamp(20px, 3.4vw, 24px); font-weight: 900; margin: 0 0 16px; }
+        .alternativ { display: grid; gap: 10px; }
+        .alt {
+            display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; cursor: pointer;
+            padding: 14px 16px; min-height: 58px; border-radius: 16px; font-weight: 700; font-size: 17px;
+            background: var(--card-2); color: var(--text); border: 2px solid var(--line);
+            transition: border-color 0.15s, background 0.15s, transform 0.1s;
+        }
+        .alt:hover:not(:disabled) { border-color: var(--violet); }
+        .alt:active:not(:disabled) { transform: scale(0.99); }
+        .alt .bokstav {
+            flex: 0 0 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+            background: var(--card); border: 2px solid var(--line); font-weight: 900;
+        }
+        .alt[aria-checked="true"] { border-color: var(--violet); background: rgba(124, 58, 237, 0.12); }
+        .alt[aria-checked="true"] .bokstav { background: var(--violet); border-color: var(--violet); color: #fff; }
+        .alt.rett { border-color: var(--ok); background: var(--ok-bg); }
+        .alt.rett .bokstav { background: var(--ok); border-color: var(--ok); color: #fff; }
+        .alt.gale { border-color: var(--bad); background: var(--bad-bg); }
+        .alt.gale .bokstav { background: var(--bad); border-color: var(--bad); color: #fff; }
+        .alt:disabled { cursor: default; }
+        .alt .merknad { margin-left: auto; font-size: 20px; }
+        .quiz-hint { color: var(--muted); font-size: 15px; margin-top: 12px; min-height: 24px; }
+        .tilbakemelding { display: none; margin-top: 16px; padding: 14px 16px; border-radius: 14px; font-weight: 600; }
+        .tilbakemelding.vis { display: block; animation: inn 0.3s ease; }
+        .tilbakemelding.ok { background: var(--ok-bg); border: 1px solid var(--ok); }
+        .tilbakemelding.feil { background: var(--bad-bg); border: 1px solid var(--bad); }
+        .quiz-knappar { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+        .resultatskjerm { text-align: center; }
+        .resultatskjerm .stor { font-size: 68px; line-height: 1; margin-bottom: 8px; }
+        .poeng { font-size: clamp(40px, 9vw, 64px); font-weight: 900; margin: 6px 0;
+            background: linear-gradient(90deg, var(--blue), var(--violet), var(--pink));
+            -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .stjerner { font-size: 30px; letter-spacing: 4px; margin-bottom: 10px; }
+        .oppsummering { text-align: left; margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+        .oppsummering li { padding: 10px 14px; border-radius: 12px; background: var(--card-2); border: 1px solid var(--line); font-size: 15px; }
+
+        /* Konfetti */
+        .konfetti { position: fixed; top: -12px; width: 10px; height: 16px; z-index: 100; pointer-events: none; border-radius: 3px; animation: fall linear forwards; }
+        @keyframes fall { to { transform: translateY(105vh) rotate(720deg); opacity: 0.6; } }
+
+        /* ================= FOTNOTE ================= */
+        footer { margin-top: 60px; padding-top: 22px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: 14px; }
+        footer a { color: var(--violet); font-weight: 800; }
+
+        /* ================= RESPONSIVT ================= */
+        @media (max-width: 960px) {
+            .meny { display: none; }
+            .temaknapp { margin-left: auto; }
+            .fakta { grid-template-columns: repeat(2, 1fr); }
             .rutenett { grid-template-columns: repeat(2, 1fr); }
         }
+        @media (max-width: 760px) {
+            .verktoy, .to-kol, .tips { grid-template-columns: 1fr; }
+            .faner { grid-template-columns: repeat(2, 1fr); }
+            .blokk { grid-template-columns: 1fr; justify-items: center; }
+            .flyt { flex-direction: column; }
+            .pil { transform: rotate(90deg); }
+            .soyle-rad { grid-template-columns: 1fr; gap: 4px; }
+        }
+        @media (max-width: 560px) {
+            body { font-size: 16px; }
+            .rutenett, .fakta { grid-template-columns: 1fr; }
+            .hovudknapp { width: 100%; padding: 16px 20px; }
+            .temaknapp .tekst { display: none; }
+            .kort, .panel .kort, .quiz .kort { padding: 18px; }
+            .quiz-knappar .knapp { flex: 1 1 auto; }
+            .faktakort { min-height: 180px; }
+        }
         @media (prefers-reduced-motion: reduce) {
-            * { animation: none !important; transition: none !important; }
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            html { scroll-behavior: auto; }
         }
     </style>
 </head>
 <body>
-<div class="wrap">
 
-    <header class="topp">
-        <div class="logo">🌐 IP<span>-guiden</span></div>
-        <nav aria-label="Snarvegar">
-            <a href="#min-ip">Min IP</a>
-            <a href="#sok">Søk</a>
-            <a href="#kva">Kva er IP?</a>
-            <a href="#v4v6">IPv4 / IPv6</a>
-            <a href="#privat">Offentleg / privat</a>
-            <a href="#tips">Tryggleik</a>
+<header class="topp">
+    <div class="topp-inner">
+        <a class="logo" href="#top">🌐 IP<span>-guiden</span></a>
+        <nav class="meny" aria-label="Hovudmeny">
+            <a href="#top">Min IP</a>
+            <a href="#verktoy">Verktøy</a>
+            <a href="#laer">Lær</a>
+            <a href="#fakta">Fakta</a>
+            <a href="#quiz">Quiz</a>
         </nav>
-    </header>
+        <button type="button" class="temaknapp" id="temaknapp" aria-pressed="false">
+            <span class="ikon" aria-hidden="true">🌙</span><span class="tekst">Mørk modus</span>
+        </button>
+    </div>
+</header>
 
-    <!-- HERO -->
-    <div class="hero" id="min-ip">
-        <span class="merke">Gruppe 1 · IP-adresse</span>
+<main class="wrap" id="top">
+
+    <!-- ================= HERO ================= -->
+    <div class="hero">
+        <span class="merke">🏫 Gruppe 1 · For 10. trinn</span>
         <h1>Kva er <span class="grad">IP-adressa</span> di?</h1>
-        <p class="lead">Kvar eining på internett har ei adresse, som postadressa di. Trykk på knappen og sjå di eiga.</p>
-        <button type="button" class="knapp stor" id="visMin">📍 Vis min IP</button>
-        <p class="smaatekst">Når du trykker, spør sida ei gratis teneste (ipapi.co, eller ipwho.is) om adressa di. Ingenting blir lagra av denne sida.</p>
-        <div class="status" id="status" role="status" aria-live="polite"></div>
+        <p class="lead">Alt som er kopla til internett har ei adresse, akkurat som huset ditt har ei postadresse. Trykk på knappen og sjå di eiga!</p>
+        <button type="button" class="knapp hovudknapp" id="visMin">📍 Vis min IP</button>
+        <p class="smaatekst">Sida spør ei gratis teneste (ipapi.co, med ipwho.is og ipify som reserve) om adressa di. Ingenting blir lagra her.</p>
+        <div class="status" id="minStatus" role="status" aria-live="polite"></div>
+        <div class="resultat" id="minResultat" aria-live="polite"></div>
     </div>
 
-    <!-- DETALJBOKS -->
-    <div id="detaljar" aria-live="polite">
-        <div class="kort">
-            <div class="ip-stor">
-                <div>
-                    <small id="detaljTittel">IP-adresse</small>
-                    <span class="tal" id="dIp">–</span>
+    <!-- ================= VERKTØY ================= -->
+    <section id="verktoy" aria-labelledby="verktoyTittel">
+        <div class="seksjonstopp">
+            <h2 id="verktoyTittel">🧰 Verktøykassa</h2>
+            <p>Slå opp kven som eig ei IP-adresse, eller test om ei adresse i det heile er gyldig.</p>
+        </div>
+        <div class="verktoy">
+            <!-- Søk -->
+            <div class="kort" id="sok">
+                <div class="verktoy-ikon ikon-bla" aria-hidden="true">🔍</div>
+                <h3>IP-søk</h3>
+                <p class="sub">Skriv inn ei IP-adresse og finn ut omtrent kvar ho er, og kven som eig henne.</p>
+                <form class="felt" id="sokSkjema" autocomplete="off">
+                    <label for="sokInn" class="skjult-etikett">IP-adresse å søkje etter</label>
+                    <input type="text" id="sokInn" placeholder="t.d. 8.8.8.8" autocapitalize="off" spellcheck="false" maxlength="45">
+                    <button type="submit" class="knapp" id="sokKnapp">Søk</button>
+                </form>
+                <div class="eksempel" aria-label="Ferdige eksempel">
+                    <span class="tittel">Prøv:</span>
+                    <button type="button" data-sok="8.8.8.8">Google DNS <span class="m">8.8.8.8</span></button>
+                    <button type="button" data-sok="1.1.1.1">Cloudflare <span class="m">1.1.1.1</span></button>
+                    <button type="button" data-sok="9.9.9.9">Quad9 <span class="m">9.9.9.9</span></button>
+                    <button type="button" data-sok="2001:4860:4860::8888">Google <span class="m">IPv6</span></button>
+                    <button type="button" data-sok="192.168.1.1">Ruteren <span class="m">192.168.1.1</span></button>
                 </div>
-                <button type="button" class="knapp sek" id="kopier">📋 Kopier</button>
+                <div class="status" id="sokStatus" role="status" aria-live="polite"></div>
+                <div class="resultat" id="sokResultat" aria-live="polite"></div>
             </div>
-            <div class="chips" id="dChips"></div>
-            <div class="rutenett">
-                <div class="celle"><div class="etikett">🌍 Land</div><div class="verdi" id="dLand">–</div></div>
-                <div class="celle"><div class="etikett">🏙️ By</div><div class="verdi" id="dBy">–</div></div>
-                <div class="celle"><div class="etikett">🗺️ Region</div><div class="verdi" id="dRegion">–</div></div>
-                <div class="celle"><div class="etikett">📡 Internettleverandør (ISP)</div><div class="verdi" id="dIsp">–</div></div>
-                <div class="celle"><div class="etikett">🕒 Tidssone</div><div class="verdi" id="dTid">–</div></div>
-                <div class="celle"><div class="etikett">📌 Koordinatar</div><div class="verdi" id="dKoord">–</div></div>
-            </div>
-            <p class="smaatekst">Plasseringa er eit grovt anslag, ofte berre byen til internettleverandøren. Ho viser ikkje heimeadressa di.</p>
-        </div>
-    </div>
 
-    <!-- SØK -->
-    <section id="sok">
-        <h2>🔍 Søk etter ei IP-adresse</h2>
-        <p>Skriv inn ei IP-adresse og få vite kven som eig henne og omtrent kvar ho er.</p>
-        <div class="kort">
-            <form class="sok" id="sokSkjema" autocomplete="off">
-                <label for="ipInn" style="position:absolute;left:-9999px">IP-adresse</label>
-                <input type="text" id="ipInn" placeholder="t.d. 8.8.8.8" inputmode="text" autocapitalize="off" spellcheck="false" maxlength="45">
-                <button type="submit" class="knapp" id="sokKnapp">Søk</button>
-            </form>
-            <div class="eksempel">
-                <span>Prøv:</span>
-                <button type="button" data-ip="8.8.8.8">8.8.8.8</button>
-                <button type="button" data-ip="1.1.1.1">1.1.1.1</button>
-                <button type="button" data-ip="2001:4860:4860::8888">2001:4860:4860::8888</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- KVA ER IP -->
-    <section id="kva">
-        <h2>📬 Kva er ei IP-adresse?</h2>
-        <div class="kort">
-            <p>Ei <strong>IP-adresse</strong> er eit tal som identifiserer ei eining på eit nettverk, til dømes mobilen din, PC-en din eller ein server.</p>
-            <p>Tenk på det som ei <strong>postadresse</strong>: Skal ein sende noko til deg, må ein vite kvar du bur. Når du opnar ei nettside, bruker datamaskinene IP-adresser for å vite kvar svaret skal sendast.</p>
-            <p>Namn som <span class="kode">nrk.no</span> er lettare å hugse for oss. Ei teneste som heiter <strong>DNS</strong> gjer om namnet til IP-adressa.</p>
-        </div>
-    </section>
-
-    <!-- IPV4 / IPV6 -->
-    <section id="v4v6">
-        <h2>🔢 IPv4 og IPv6</h2>
-        <div class="to-kol">
-            <div class="kort">
-                <h3>IPv4</h3>
-                <p>Fire tal mellom 0 og 255, delt med punktum.</p>
-                <div class="oktettar" aria-label="Eksempel på IPv4-adresse">
-                    <span class="okt">192</span><span class="punkt">.</span><span class="okt">168</span><span class="punkt">.</span><span class="okt">1</span><span class="punkt">.</span><span class="okt">25</span>
+            <!-- Validator -->
+            <div class="kort" id="validator">
+                <div class="verktoy-ikon ikon-gron" aria-hidden="true">✅</div>
+                <h3>IP-sjekkaren</h3>
+                <p class="sub">Er adressa gyldig? Skriv, og sjå svaret med ein gong. Du får vite <em>kvifor</em>.</p>
+                <form class="felt" id="valSkjema" autocomplete="off">
+                    <label for="valInn" class="skjult-etikett">IP-adresse å sjekke</label>
+                    <input type="text" id="valInn" placeholder="t.d. 192.168.1.300" autocapitalize="off" spellcheck="false" maxlength="45">
+                    <button type="submit" class="knapp sek">Sjekk</button>
+                </form>
+                <div class="eksempel" aria-label="Test-eksempel">
+                    <span class="tittel">Test:</span>
+                    <button type="button" data-val="192.168.1.1"><span class="m">192.168.1.1</span></button>
+                    <button type="button" data-val="256.10.0.1"><span class="m">256.10.0.1</span></button>
+                    <button type="button" data-val="10.0.0"><span class="m">10.0.0</span></button>
+                    <button type="button" data-val="8.8.eight.8"><span class="m">8.8.eight.8</span></button>
+                    <button type="button" data-val="::1"><span class="m">::1</span></button>
                 </div>
-                <p>Det finst om lag <strong>4,3 milliardar</strong> slike adresser. Det er ikkje nok til alle einingane i verda i dag.</p>
+                <div class="val-svar" id="valSvar" aria-live="polite">
+                    <div class="val-tittel">🤔 Skriv ei adresse</div>
+                    <p style="margin:0">Huskeregel: ei IPv4-adresse har <strong>fire tal</strong> skilde med <strong>punktum</strong>, og kvart tal må vere mellom <strong>0 og 255</strong>.</p>
+                </div>
             </div>
-            <div class="kort">
-                <h3>IPv6</h3>
-                <p>Åtte grupper med bokstavar og tal, delt med kolon.</p>
-                <div class="v6" aria-label="Eksempel på IPv6-adresse">2001:0db8:85a3:0000:0000:8a2e:0370:7334</div>
-                <p style="margin-top:10px">Her finst det eit nesten ubegrensa tal adresser. IPv6 vart laga for at vi ikkje skal gå tom.</p>
-            </div>
-        </div>
-        <div class="kort" style="margin-top:14px">
-            <table>
-                <thead><tr><th></th><th>IPv4</th><th>IPv6</th></tr></thead>
-                <tbody>
-                    <tr><td>Lengd</td><td>32 bit</td><td>128 bit</td></tr>
-                    <tr><td>Skrivemåte</td><td>Tal og punktum</td><td>Heksadesimalt og kolon</td></tr>
-                    <tr><td>Tal adresser</td><td>Ca. 4,3 milliardar</td><td>Svært, svært mange</td></tr>
-                    <tr><td>Bruk i dag</td><td>Framleis mest brukt</td><td>Veks stadig</td></tr>
-                </tbody>
-            </table>
         </div>
     </section>
 
-    <!-- OFFENTLEG / PRIVAT -->
-    <section id="privat">
-        <h2>🏠 Offentleg og privat IP-adresse</h2>
-        <div class="to-kol">
+    <!-- ================= LÆR (FANER) ================= -->
+    <section id="laer" aria-labelledby="laerTittel">
+        <div class="seksjonstopp">
+            <h2 id="laerTittel">📚 Lær om IP-adresser</h2>
+            <p>Trykk på eit tema for å opne forklaringa.</p>
+        </div>
+
+        <div class="faner" role="tablist" aria-label="Tema">
+            <button type="button" class="fane" role="tab" id="fane-kva" aria-controls="panel-kva" aria-selected="true" data-farge="bla"><span class="emoji" aria-hidden="true">📬</span>Kva er ei IP-adresse?</button>
+            <button type="button" class="fane" role="tab" id="fane-v4v6" aria-controls="panel-v4v6" aria-selected="false" tabindex="-1" data-farge="lilla"><span class="emoji" aria-hidden="true">🔢</span>IPv4 og IPv6</button>
+            <button type="button" class="fane" role="tab" id="fane-privat" aria-controls="panel-privat" aria-selected="false" tabindex="-1" data-farge="gron"><span class="emoji" aria-hidden="true">🏠</span>Offentleg og privat</button>
+            <button type="button" class="fane" role="tab" id="fane-vpn" aria-controls="panel-vpn" aria-selected="false" tabindex="-1" data-farge="rosa"><span class="emoji" aria-hidden="true">🛡️</span>Tryggleik og VPN</button>
+        </div>
+
+        <!-- Panel 1 -->
+        <div class="panel vis" role="tabpanel" id="panel-kva" aria-labelledby="fane-kva" tabindex="0">
             <div class="kort">
-                <h3>Offentleg</h3>
-                <p>Adressa heile internett ser. Ho blir gitt av internettleverandøren din, og alle einingane heime hjå deg deler ofte <strong>same</strong> offentlege adresse.</p>
-                <p>Dette er adressa du får når du trykker «Vis min IP».</p>
-            </div>
-            <div class="kort">
-                <h3>Privat</h3>
-                <p>Adressa einingane dine har inne på heimenettverket. Ruteren deler dei ut, og dei kan ikkje nåast direkte frå internett.</p>
-                <p>Vanlege område: <span class="kode">192.168.x.x</span>, <span class="kode">10.x.x.x</span> og <span class="kode">172.16–31.x.x</span>.</p>
+                <h3>📬 Kva er ei IP-adresse?</h3>
+                <p>Ei <strong>IP-adresse</strong> er eit nummer som fortel kvar ei eining er på eit nettverk. Mobilen, PC-en, spelkonsollen og til og med smart-TV-en har ei. <strong>IP</strong> står for <em>Internet Protocol</em>, altså reglane for korleis data blir sende rundt på internett.</p>
+                <div class="metafor">
+                    <span class="stor-emoji" aria-hidden="true">🏡</span>
+                    <p><strong>Tenk deg posten:</strong> Vil du sende eit brev, må du skrive adressa på konvolutten. IP-adressa er den digitale <strong>postadressa</strong> til eininga di. Ruteren er <strong>postkontoret</strong> som sorterer og sender pakkane vidare til rett stad.</p>
+                </div>
+                <p>Når du opnar ei nettside, blir det sendt små <strong>datapakkar</strong> fram og tilbake. Trykk på knappen og følg ein pakke på vegen:</p>
+                <div class="flyt" id="flyt">
+                    <div class="stopp" data-steg="0"><span class="e" aria-hidden="true">📱</span><b>Mobilen din</b><span class="m">192.168.1.23</span></div>
+                    <span class="pil" aria-hidden="true">➜</span>
+                    <div class="stopp" data-steg="1"><span class="e" aria-hidden="true">📮</span><b>Ruteren</b><small>Postkontoret heime</small></div>
+                    <span class="pil" aria-hidden="true">➜</span>
+                    <div class="stopp" data-steg="2"><span class="e" aria-hidden="true">📖</span><b>DNS</b><small>Telefonkatalogen</small></div>
+                    <span class="pil" aria-hidden="true">➜</span>
+                    <div class="stopp" data-steg="3"><span class="e" aria-hidden="true">🌍</span><b>Internett</b><small>Mange postkontor</small></div>
+                    <span class="pil" aria-hidden="true">➜</span>
+                    <div class="stopp" data-steg="4"><span class="e" aria-hidden="true">🖥️</span><b>nrk.no</b><span class="m">160.68.205.231</span></div>
+                </div>
+                <p class="flyt-tekst" id="flytTekst" aria-live="polite"></p>
+                <div style="text-align:center"><button type="button" class="knapp sek flyt-knapp" id="flytKnapp">✉️ Send ein pakke</button></div>
+                <div class="to-kol" style="margin-top:18px">
+                    <div class="boks">
+                        <h4>📖 Kva er DNS?</h4>
+                        <p style="margin:0">Det er lettare å hugse <span class="kode">nrk.no</span> enn eit langt tal. <strong>DNS</strong> fungerer som kontaktlista på mobilen: du vel eit namn, og telefonen finn nummeret. DNS gjer om namnet til IP-adressa.</p>
+                    </div>
+                    <div class="boks">
+                        <h4>🔄 Endrar adressa seg?</h4>
+                        <p style="margin:0">Ofte, ja! Går du frå Wi-Fi heime til mobildata, får du ei ny offentleg IP-adresse. Det er litt som å flytte, og så få ny postadresse.</p>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="kort" style="margin-top:14px">
-            <p style="margin:0">💡 <strong>Hus-samanlikning:</strong> Den offentlege adressa er husnummeret til blokka. Dei private adressene er romnummera inne i blokka. Ruteren er vaktmeisteren som sørgjer for at posten kjem til rett rom.</p>
+
+        <!-- Panel 2 -->
+        <div class="panel" role="tabpanel" id="panel-v4v6" aria-labelledby="fane-v4v6" tabindex="0" hidden>
+            <div class="kort">
+                <h3>🔢 IPv4 og IPv6 – kvifor går vi tom?</h3>
+                <div class="to-kol">
+                    <div class="boks">
+                        <h4>IPv4 (frå 1981)</h4>
+                        <p>Fire tal mellom 0 og 255, skilde med punktum:</p>
+                        <div class="oktettar" aria-label="Eksempel på IPv4-adresse: 192.168.1.25">
+                            <span class="okt">192</span><span class="punkt">.</span><span class="okt">168</span><span class="punkt">.</span><span class="okt">1</span><span class="punkt">.</span><span class="okt">25</span>
+                        </div>
+                        <p style="margin:0">Kvart tal er laga av <strong>8 bit</strong> (8 av/på-brytarar). Med 8 brytarar kan du lage 256 ulike tal: frå 0 til 255. Difor kan aldri eit tal vere 256 eller meir!</p>
+                    </div>
+                    <div class="boks">
+                        <h4>IPv6 (den nye)</h4>
+                        <p>Åtte grupper med tal og bokstavar (a–f), skilde med kolon:</p>
+                        <p class="v6">2001:0db8:85a3:0000:0000:8a2e:0370:7334</p>
+                        <p style="margin:0">Lange rekkjer med nullar kan forkortast med <span class="kode">::</span>. Til dømes er <span class="kode">::1</span> det same som 0000:0000:0000:0000:0000:0000:0000:0001.</p>
+                    </div>
+                </div>
+                <div class="metafor">
+                    <span class="stor-emoji" aria-hidden="true">🚗</span>
+                    <p><strong>Tenk på bilskilt:</strong> Om skilta berre hadde to bokstavar og eitt siffer, ville vi raskt gå tom. Med fleire teikn blir det plass til mange fleire bilar. IPv4 har korte «skilt», IPv6 har svært lange.</p>
+                </div>
+                <h4 style="margin:18px 0 0">Kvifor går vi tom for IPv4-adresser?</h4>
+                <div class="soyler" id="soyler" aria-label="Samanlikning av tal">
+                    <div class="soyle-rad"><span>IPv4-adresser</span><div class="soyle a" data-w="25">ca. 4,3 milliardar</div></div>
+                    <div class="soyle-rad"><span>Menneske på jorda</span><div class="soyle b" data-w="47">ca. 8,2 milliardar</div></div>
+                    <div class="soyle-rad"><span>Einingar på nett</span><div class="soyle c" data-w="100">over 17 milliardar</div></div>
+                </div>
+                <p style="margin-top:12px">Det finst færre IPv4-adresser enn det finst menneske, og mange av oss har både mobil, PC, nettbrett og klokke. Dei siste store blokkene av IPv4-adresser vart delte ut i 2011. <strong>IPv6</strong> har eit tal adresser med 39 siffer: nok til å gi kvar sandkorn på jorda milliardar av adresser.</p>
+                <div class="tabell-wrap">
+                    <table>
+                        <thead><tr><th></th><th>IPv4</th><th>IPv6</th></tr></thead>
+                        <tbody>
+                            <tr><td>Lengd</td><td>32 bit</td><td>128 bit</td></tr>
+                            <tr><td>Skrivemåte</td><td>4 tal og punktum</td><td>8 grupper og kolon</td></tr>
+                            <tr><td>Tal adresser</td><td>Ca. 4,3 milliardar</td><td>Ca. 340 sekstillionar (39 siffer!)</td></tr>
+                            <tr><td>Døme</td><td><span class="kode">8.8.8.8</span></td><td><span class="kode">2001:4860:4860::8888</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel 3 -->
+        <div class="panel" role="tabpanel" id="panel-privat" aria-labelledby="fane-privat" tabindex="0" hidden>
+            <div class="kort">
+                <h3>🏠 Offentleg og privat IP-adresse</h3>
+                <div class="blokk">
+                    <div class="hus" aria-label="Illustrasjon av ei blokk med éi offentleg adresse og fleire private">
+                        <div class="tak">🏢 85.164.12.7</div>
+                        <small style="color:var(--muted)">Offentleg adresse (gateadressa)</small>
+                        <div class="rom">
+                            <div>📱 Mobil<b>192.168.1.23</b></div>
+                            <div>💻 PC<b>192.168.1.24</b></div>
+                            <div>🎮 Konsoll<b>192.168.1.30</b></div>
+                            <div>📺 TV<b>192.168.1.41</b></div>
+                        </div>
+                    </div>
+                    <div class="metafor" style="margin:0">
+                        <span class="stor-emoji" aria-hidden="true">🏢</span>
+                        <p><strong>Tenk på ei blokk:</strong> Heile blokka har éi gateadresse (den <strong>offentlege</strong> IP-adressa). Inne i blokka har kvar leilegheit sitt eige nummer (dei <strong>private</strong> IP-adressene). Ruteren er vaktmeisteren som sørgjer for at kvar pakke kjem til rett leilegheit.</p>
+                    </div>
+                </div>
+                <div class="to-kol">
+                    <div class="boks">
+                        <h4>🌍 Offentleg IP</h4>
+                        <p>Adressa resten av internett ser. Du får ho frå internettleverandøren (t.d. Telenor eller Telia). Alle einingane heime deler som regel <strong>same</strong> offentlege adresse.</p>
+                        <p style="margin:0">Det er denne du ser når du trykker «Vis min IP».</p>
+                    </div>
+                    <div class="boks">
+                        <h4>🔒 Privat IP</h4>
+                        <p>Adressa eininga har <em>inne</em> på heimenettet. Ruteren deler dei ut, og dei kan ikkje nåast direkte frå internett. Mange heimar bruker akkurat dei same private adressene, og det går heilt fint.</p>
+                        <p style="margin:0">Vanlege område: <span class="kode">192.168.x.x</span> <span class="kode">10.x.x.x</span> <span class="kode">172.16–31.x.x</span></p>
+                    </div>
+                </div>
+                <p style="margin-top:14px">💡 <strong>Visste du?</strong> Det at ruteren lèt mange private adresser dele éi offentleg, heiter <strong>NAT</strong>. Det er eitt av knepa som har gjort at IPv4 framleis held.</p>
+            </div>
+        </div>
+
+        <!-- Panel 4 -->
+        <div class="panel" role="tabpanel" id="panel-vpn" aria-labelledby="fane-vpn" tabindex="0" hidden>
+            <div class="kort">
+                <h3>🛡️ Tryggleik og VPN</h3>
+                <p>Alle nettsider du besøkjer, ser den offentlege IP-adressa di. Det er heilt normalt: dei må jo vite kvar svaret skal sendast. IP-adressa fortel <strong>ikkje</strong> namnet ditt eller heimeadressa di, men ho kan avsløre omtrent kva by du er i og kva internettleverandør du har.</p>
+                <div class="metafor">
+                    <span class="stor-emoji" aria-hidden="true">📦</span>
+                    <p><strong>VPN er som ein hemmeleg tunnel:</strong> I staden for å sende brevet direkte, legg du det i ein låst boks og sender det via ein venn i ein annan by. Mottakaren ser berre adressa til venen (VPN-serveren), ikkje di. Undervegs kan ingen kikke i boksen.</p>
+                </div>
+                <div class="tips">
+                    <div class="boks">
+                        <div class="ikon" aria-hidden="true">🔐</div>
+                        <h4>Det VPN gjer</h4>
+                        <p style="margin:0">Krypterer trafikken (gjer han ulesbar for andre) og gøymer IP-adressa di bak VPN-serveren. Fint på opne Wi-Fi-nett på kafé eller flyplass.</p>
+                    </div>
+                    <div class="boks">
+                        <div class="ikon" aria-hidden="true">⚠️</div>
+                        <h4>Det VPN ikkje gjer</h4>
+                        <p style="margin:0">VPN stoppar ikkje virus, svindel eller falske nettsider. Og VPN-firmaet kan sjølv sjå trafikken din, så gratis VPN kan tene pengar på dataa dine.</p>
+                    </div>
+                    <div class="boks">
+                        <div class="ikon" aria-hidden="true">🙈</div>
+                        <h4>Ikkje del unødvendig</h4>
+                        <p style="margin:0">Ikkje legg ut IP-adressa di i spelchattar eller på sosiale medium. Nokon kan prøve å bruke ho til å plage eller angripe nettet ditt.</p>
+                    </div>
+                    <div class="boks">
+                        <div class="ikon" aria-hidden="true">🔄</div>
+                        <h4>Gode vanar</h4>
+                        <p style="margin:0">Oppdater ruteren og einingane dine, bruk sterke passord på Wi-Fi-en, og skru på tofaktor-pålogging der du kan.</p>
+                    </div>
+                </div>
+                <p style="margin-top:16px">🧪 <strong>Prøv sjølv:</strong> Trykk «Vis min IP» på mobildata, og så på Wi-Fi. Ser du at adressa endrar seg?</p>
+            </div>
         </div>
     </section>
 
-    <!-- TIPS -->
-    <section id="tips">
-        <h2>🛡️ Tryggleik, personvern og VPN</h2>
-        <div class="tips">
-            <div class="kort">
-                <div class="ikon" aria-hidden="true">🙈</div>
-                <h3>Ikkje del meir enn du må</h3>
-                <p>IP-adressa di fortel ikkje namnet ditt, men saman med anna informasjon kan ho seie noko om kvar du er. Ver kritisk til kven du deler ho med.</p>
-            </div>
-            <div class="kort">
-                <div class="ikon" aria-hidden="true">🕵️</div>
-                <h3>Nettsider ser adressa di</h3>
-                <p>Kvar nettside du besøker får vite IP-adressa di. Det er heilt normalt, for dei må vite kvar svaret skal sendast.</p>
-            </div>
-            <div class="kort">
-                <div class="ikon" aria-hidden="true">🔐</div>
-                <h3>Kva gjer ein VPN?</h3>
-                <p>Ein VPN sender trafikken din gjennom ein annan server. Då ser nettsidene VPN-serverens IP-adresse i staden for di. Prøv sjølv: trykk «Vis min IP» med og utan VPN.</p>
-            </div>
-            <div class="kort">
-                <div class="ikon" aria-hidden="true">⚠️</div>
-                <h3>Ein VPN er ikkje magi</h3>
-                <p>VPN-tenesta kan sjølv sjå trafikken din, så vel ei du stolar på. Gratis VPN-ar tener ofte pengar på dataa dine. Ein VPN hjelper heller ikkje mot virus eller svindel.</p>
-            </div>
+    <!-- ================= FAKTA ================= -->
+    <section id="fakta" aria-labelledby="faktaTittel">
+        <div class="seksjonstopp">
+            <h2 id="faktaTittel">🤯 Gøyale IP-fakta</h2>
+            <p>Trykk på korta for å snu dei.</p>
+        </div>
+        <div class="fakta">
+            <button type="button" class="faktakort f1" aria-pressed="false">
+                <span class="inni">
+                    <span class="side fram"><span class="e" aria-hidden="true">🏠</span><b>127.0.0.1</b><small>Trykk for å snu</small></span>
+                    <span class="side bak"><p><strong>127.0.0.1</strong> heiter <em>localhost</em> og peikar alltid tilbake til maskina du sit på. Difor seier nerdar: «There's no place like 127.0.0.1», altså «Borte bra, men heime best».</p></span>
+                </span>
+            </button>
+            <button type="button" class="faktakort f2" aria-pressed="false">
+                <span class="inni">
+                    <span class="side fram"><span class="e" aria-hidden="true">🔊</span><b>Kvifor heiter det «ping»?</b><small>Trykk for å snu</small></span>
+                    <span class="side bak"><p>Programmet <strong>ping</strong> vart skrive av Mike Muuss i 1983. Namnet kjem frå lyden ekkoloddet i ein ubåt lagar: ein «ping» blir sendt ut, og ein ventar på ekkoet.</p></span>
+                </span>
+            </button>
+            <button type="button" class="faktakort f3" aria-pressed="false">
+                <span class="inni">
+                    <span class="side fram"><span class="e" aria-hidden="true">📉</span><b>Tomt i lageret</b><small>Trykk for å snu</small></span>
+                    <span class="side bak"><p>Europa gjekk offisielt tom for nye IPv4-adresser i <strong>november 2019</strong>. I dag blir brukte IPv4-adresser kjøpte og selde for mange hundre kroner stykket!</p></span>
+                </span>
+            </button>
+            <button type="button" class="faktakort f4" aria-pressed="false">
+                <span class="inni">
+                    <span class="side fram"><span class="e" aria-hidden="true">🎱</span><b>8.8.8.8</b><small>Trykk for å snu</small></span>
+                    <span class="side bak"><p>Google valde den lette adressa <strong>8.8.8.8</strong> til DNS-tenesta si i 2009. Konkurrenten Cloudflare svarte med <strong>1.1.1.1</strong>, som starta 1. april 2018. Nei, det var ikkje aprilspøk.</p></span>
+                </span>
+            </button>
+            <button type="button" class="faktakort f5" aria-pressed="false">
+                <span class="inni">
+                    <span class="side fram"><span class="e" aria-hidden="true">🏖️</span><b>Sandkorn-testen</b><small>Trykk for å snu</small></span>
+                    <span class="side bak"><p>IPv6 har om lag <strong>340 sekstillionar</strong> adresser. Det er så mange at kvart sandkorn på jorda kunne fått sitt eige nettverk med milliardar av adresser.</p></span>
+                </span>
+            </button>
+            <button type="button" class="faktakort f6" aria-pressed="false">
+                <span class="inni">
+                    <span class="side fram"><span class="e" aria-hidden="true">🔢</span><b>Fleire måtar å skrive det på</b><small>Trykk for å snu</small></span>
+                    <span class="side bak"><p>Same IPv4-adresse kan skrivast som eitt stort tal. <strong>8.8.8.8</strong> er det same som <strong>134 744 072</strong>. Datamaskina ser berre 32 nullar og eittal.</p></span>
+                </span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ================= QUIZ ================= -->
+    <section id="quiz" aria-labelledby="quizTittel">
+        <div class="seksjonstopp">
+            <h2 id="quizTittel">🏆 IP-quiz</h2>
+            <p>Fem spørsmål om det du har lært. Du kan byte svar så mange gonger du vil før du trykker «Bekreft svar».</p>
+        </div>
+        <div class="quiz">
+            <div class="kort" id="quizKort"></div>
         </div>
     </section>
 
     <footer>
-        <p>Plasseringsdata kjem frå ipapi.co, med ipwho.is som reserve. Svara er anslag og kan vere unøyaktige.</p>
+        <p>Plasseringsdata kjem frå ipapi.co, med ipwho.is og ipify som reserve. Plasseringa er eit grovt anslag og viser aldri heimeadressa di.</p>
+        <p>Laga av gruppe 1 · Informasjonsteknologi og medieproduksjon, Stord vgs</p>
         <a href="index.html">← Tilbake til VM i PROMPTING26</a>
     </footer>
-</div>
+</main>
 
 <script>
 (function () {
     "use strict";
 
     var $ = function (id) { return document.getElementById(id); };
-    var opptatt = false;
+    var alle = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
 
-    /* ---------- Status ---------- */
-    function visStatus(type, tekst) {
-        var s = $("status");
-        s.className = "status vis " + type;
-        s.textContent = tekst;
+    /* =====================================================
+       TEMA: lys / mørk
+       ===================================================== */
+    var temaknapp = $("temaknapp");
+    function settTema(t, lagre) {
+        document.documentElement.setAttribute("data-theme", t);
+        var mork = t === "dark";
+        temaknapp.setAttribute("aria-pressed", mork ? "true" : "false");
+        temaknapp.querySelector(".ikon").textContent = mork ? "☀️" : "🌙";
+        temaknapp.querySelector(".tekst").textContent = mork ? "Lys modus" : "Mørk modus";
+        temaknapp.setAttribute("aria-label", mork ? "Byt til lys modus" : "Byt til mørk modus");
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) { meta.setAttribute("content", mork ? "#0c1022" : "#f5f7ff"); }
+        if (lagre) {
+            try { localStorage.setItem("ipguide-tema", t); } catch (e) { /* ignorer */ }
+        }
     }
-    function skjulStatus() { $("status").className = "status"; }
+    settTema(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light", false);
+    temaknapp.addEventListener("click", function () {
+        settTema(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark", true);
+    });
 
-    /* ---------- Validering og klassifisering ---------- */
+    /* =====================================================
+       HJELPARAR
+       ===================================================== */
+    function esc(v) {
+        return String(v).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+    function tekst(v) { return (v === undefined || v === null || v === "") ? "Ukjent" : String(v); }
+
+    function visStatus(el, type, t) { el.className = "status vis " + type; el.textContent = t; }
+    function skjulStatus(el) { el.className = "status"; el.textContent = ""; }
+
+    /* =====================================================
+       VALIDERING OG KLASSIFISERING
+       ===================================================== */
     function erIPv4(s) {
         var d = s.split(".");
         if (d.length !== 4) { return false; }
-        return d.every(function (x) { return /^\d{1,3}$/.test(x) && Number(x) <= 255; });
+        return d.every(function (x) {
+            return /^\d{1,3}$/.test(x) && Number(x) <= 255 && !(x.length > 1 && x.charAt(0) === "0");
+        });
     }
 
     function erIPv6(s) {
         if (!/^[0-9a-f:.]+$/i.test(s) || s.indexOf(":") === -1) { return false; }
         if ((s.match(/::/g) || []).length > 1) { return false; }
+        if (/:::/.test(s)) { return false; }
+        if (/^:[^:]/.test(s) || /[^:]:$/.test(s)) { return false; }
         var delar = s.split(":");
         var harDobbel = s.indexOf("::") !== -1;
         var sisteV4 = delar[delar.length - 1].indexOf(".") !== -1;
@@ -389,6 +904,7 @@
             if (o[0] === 192 && o[1] === 168) { return "privat"; }
             if (o[0] === 127) { return "loopback"; }
             if (o[0] === 169 && o[1] === 254) { return "lokal"; }
+            if (o[0] === 100 && o[1] >= 64 && o[1] <= 127) { return "cgnat"; }
             if (o[0] === 0 || o[0] >= 224) { return "reservert"; }
             return "offentleg";
         }
@@ -397,14 +913,33 @@
         if (l === "::") { return "reservert"; }
         if (/^f[cd]/.test(l)) { return "privat"; }
         if (/^fe[89ab]/.test(l)) { return "lokal"; }
+        if (/^ff/.test(l)) { return "reservert"; }
         return "offentleg";
     }
 
-    /* ---------- Henting frå API ---------- */
+    var typeNamn = {
+        offentleg: "🌍 Offentleg adresse",
+        privat: "🔒 Privat adresse",
+        loopback: "🏠 Loopback (localhost)",
+        lokal: "🔗 Lokal lenkjeadresse",
+        cgnat: "🏢 Delt adresse (CGNAT)",
+        reservert: "🚧 Reservert adresse"
+    };
+    var typeForklaring = {
+        privat: "Dette er ei privat adresse. Ho blir berre brukt inne på lokale nettverk, til dømes heime eller på skulen, så ho har inga plassering på internett. Tusenvis av heimar bruker akkurat same adresse!",
+        loopback: "Dette er ei loopback-adresse (localhost). Ho peikar alltid tilbake til maskina du sit på, så det er ingenting å slå opp.",
+        lokal: "Dette er ei lokal lenkjeadresse. Ei eining lagar ho sjølv når ho ikkje får adresse frå ruteren. Ho fungerer berre på det lokale nettet.",
+        cgnat: "Dette er ei delt adresse som internettleverandørar bruker internt når mange kundar må dele éi offentleg adresse. Ho kan ikkje slåast opp.",
+        reservert: "Dette er ei reservert adresse som ikkje blir brukt av vanlege einingar på internett."
+    };
+
+    /* =====================================================
+       HENTING FRÅ API
+       ===================================================== */
     function hentJson(url) {
-        var kontroll = new AbortController();
-        var timer = setTimeout(function () { kontroll.abort(); }, 8000);
-        return fetch(url, { signal: kontroll.signal, headers: { "Accept": "application/json" } })
+        var kontroll = typeof AbortController !== "undefined" ? new AbortController() : null;
+        var timer = setTimeout(function () { if (kontroll) { kontroll.abort(); } }, 8000);
+        return fetch(url, kontroll ? { signal: kontroll.signal } : {})
             .then(function (r) {
                 clearTimeout(timer);
                 if (!r.ok) { throw new Error("HTTP " + r.status); }
@@ -415,17 +950,10 @@
     function fraIpapi(ip) {
         var url = "https://ipapi.co/" + (ip ? encodeURIComponent(ip) + "/" : "") + "json/";
         return hentJson(url).then(function (d) {
-            if (d.error) { throw new Error(d.reason || "ipapi-feil"); }
+            if (!d || d.error) { throw new Error((d && d.reason) || "ipapi-feil"); }
             return {
-                ip: d.ip,
-                land: d.country_name,
-                by: d.city,
-                region: d.region,
-                isp: d.org,
-                tidssone: d.timezone,
-                breidd: d.latitude,
-                lengd: d.longitude,
-                versjon: d.version
+                ip: d.ip, land: d.country_name, landkode: d.country_code, by: d.city, region: d.region,
+                isp: d.org, tidssone: d.timezone, breidd: d.latitude, lengd: d.longitude
             };
         });
     }
@@ -433,154 +961,497 @@
     function fraIpwho(ip) {
         var url = "https://ipwho.is/" + (ip ? encodeURIComponent(ip) : "");
         return hentJson(url).then(function (d) {
-            if (d.success === false) { throw new Error(d.message || "ipwho-feil"); }
+            if (!d || d.success === false) { throw new Error((d && d.message) || "ipwho-feil"); }
             return {
-                ip: d.ip,
-                land: d.country,
-                by: d.city,
-                region: d.region,
+                ip: d.ip, land: d.country, landkode: d.country_code, by: d.city, region: d.region,
                 isp: d.connection ? (d.connection.isp || d.connection.org) : "",
-                tidssone: d.timezone ? d.timezone.id : "",
-                breidd: d.latitude,
-                lengd: d.longitude,
-                versjon: d.type
+                tidssone: d.timezone ? d.timezone.id : "", breidd: d.latitude, lengd: d.longitude
             };
         });
     }
 
-    function sloaOpp(ip) {
+    /* ipify gir berre sjølve adressa – siste reserve for «Vis min IP» */
+    function fraIpify() {
+        return hentJson("https://api64.ipify.org?format=json").then(function (d) {
+            if (!d || !d.ip) { throw new Error("ipify-feil"); }
+            return { ip: d.ip, berreIp: true };
+        });
+    }
+
+    function slaaOppMin() {
+        return fraIpapi("").catch(function () { return fraIpwho(""); }).catch(function () { return fraIpify(); });
+    }
+    function slaaOpp(ip) {
         return fraIpapi(ip).catch(function () { return fraIpwho(ip); });
-    }
-
-    /* ---------- Visning ---------- */
-    function tekst(v) {
-        return (v === undefined || v === null || v === "") ? "Ukjent" : String(v);
-    }
-
-    function koordinat(b, l) {
-        if (typeof b !== "number" || typeof l !== "number") { return "Ukjent"; }
-        return "Breidd " + b.toFixed(4) + "°, lengd " + l.toFixed(4) + "°";
-    }
-
-    function chip(tekstVerdi, accent) {
-        var s = document.createElement("span");
-        s.className = "chip" + (accent ? " accent" : "");
-        s.textContent = tekstVerdi;
-        return s;
-    }
-
-    function visDetaljar(d, tittel) {
-        $("detaljTittel").textContent = tittel;
-        $("dIp").textContent = tekst(d.ip);
-        $("dLand").textContent = tekst(d.land);
-        $("dBy").textContent = tekst(d.by);
-        $("dRegion").textContent = tekst(d.region);
-        $("dIsp").textContent = tekst(d.isp);
-        $("dTid").textContent = tekst(d.tidssone);
-        $("dKoord").textContent = koordinat(Number(d.breidd), Number(d.lengd));
-
-        var ch = $("dChips");
-        ch.textContent = "";
-        var v = erIPv6(d.ip || "") ? "IPv6" : "IPv4";
-        ch.appendChild(chip(v, true));
-        ch.appendChild(chip(klassifiser(d.ip || "") === "offentleg" ? "Offentleg adresse" : "Spesiell adresse"));
-
-        $("detaljar").className = "vis";
-        $("detaljar").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function feilmelding(e) {
         if (e && e.name === "AbortError") { return "Tenesta svarte ikkje i tide. Prøv igjen om litt."; }
-        return "Kunne ikkje hente informasjon akkurat no. Det kan vere at tenesta er opptatt (gratis tenester har ei grense), eller at nettlesaren blokkerer førespurnaden. Prøv igjen om litt.";
+        return "Kunne ikkje hente informasjon akkurat no. Gratis-tenestene har ei grense for kor mange spørsmål dei svarer på, eller så blokkerer nettlesaren (t.d. ein annonseblokkar) førespurnaden. Prøv igjen om litt.";
     }
 
-    /* ---------- Hovudknapp ---------- */
-    $("visMin").addEventListener("click", function () {
-        if (opptatt) { return; }
-        opptatt = true;
-        var b = $("visMin");
-        b.disabled = true;
-        visStatus("laster", "⏳ Hentar IP-adressa di …");
-        sloaOpp("").then(function (d) {
-            skjulStatus();
-            visDetaljar(d, "Din offentlege IP-adresse");
-        }).catch(function (e) {
-            visStatus("feil", "⚠️ " + feilmelding(e));
-        }).then(function () {
-            opptatt = false;
-            b.disabled = false;
-        });
-    });
+    /* =====================================================
+       VISE RESULTAT
+       ===================================================== */
+    function flagg(kode) {
+        if (!kode || !/^[A-Za-z]{2}$/.test(kode)) { return ""; }
+        var k = kode.toUpperCase();
+        return String.fromCodePoint(0x1F1E6 + k.charCodeAt(0) - 65, 0x1F1E6 + k.charCodeAt(1) - 65) + " ";
+    }
 
-    /* ---------- Søk ---------- */
-    function sok(rått) {
-        if (opptatt) { return; }
-        var ip = rått.trim();
-        if (!ip) {
-            visStatus("info", "Skriv inn ei IP-adresse først, til dømes 8.8.8.8.");
-            return;
-        }
-        if (!erIPv4(ip) && !erIPv6(ip)) {
-            visStatus("feil", "«" + ip + "» ser ikkje ut som ei gyldig IP-adresse. Ei IPv4-adresse har fire tal frå 0 til 255, til dømes 8.8.8.8.");
-            $("min-ip").scrollIntoView({ behavior: "smooth" });
-            return;
-        }
+    function byggResultat(boks, d, tittel) {
+        var ip = d.ip || "";
+        var v6 = erIPv6(ip);
         var type = klassifiser(ip);
-        if (type !== "offentleg") {
-            var forklaring = {
-                privat: "Dette er ei privat adresse. Ho blir berre brukt inne på lokale nettverk, så ho kan ikkje slåast opp og har ingen plassering på internett.",
-                loopback: "Dette er ei loopback-adresse. Ho peikar alltid tilbake til maskina du sit på.",
-                lokal: "Dette er ei lokal lenkjeadresse som maskina lagar sjølv når ho ikkje får ei vanleg adresse.",
-                reservert: "Dette er ei reservert adresse som ikkje blir brukt av vanlege einingar på internett."
-            };
-            visStatus("info", "ℹ️ " + forklaring[type]);
-            $("detaljar").className = "";
-            $("min-ip").scrollIntoView({ behavior: "smooth" });
-            return;
-        }
+        var b = Number(d.breidd), l = Number(d.lengd);
+        var harKoord = isFinite(b) && isFinite(l) && !(b === 0 && l === 0) && d.breidd !== undefined && d.breidd !== null;
+        var koordTekst = harKoord ? b.toFixed(2) + "°, " + l.toFixed(2) + "°" : "Ukjent";
+        var kartlenke = harKoord
+            ? '<a class="knapp sek" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=' + b + "&mlon=" + l + "#map=10/" + b + "/" + l + '">🗺️ Sjå på kart</a>'
+            : "";
 
-        opptatt = true;
-        $("sokKnapp").disabled = true;
-        visStatus("laster", "⏳ Søkjer etter " + ip + " …");
-        $("min-ip").scrollIntoView({ behavior: "smooth" });
-        sloaOpp(ip).then(function (d) {
-            if (!d.ip) { d.ip = ip; }
-            skjulStatus();
-            visDetaljar(d, "Resultat for søket ditt");
-        }).catch(function (e) {
-            visStatus("feil", "⚠️ " + feilmelding(e));
-        }).then(function () {
-            opptatt = false;
-            $("sokKnapp").disabled = false;
-        });
+        var html =
+            '<div class="kort">' +
+                '<div class="ip-topp">' +
+                    '<div><small>' + esc(tittel) + '</small><span class="tal">' + esc(tekst(ip)) + "</span></div>" +
+                    '<div class="ip-knappar"><button type="button" class="knapp sek" data-kopier="' + esc(ip) + '">📋 Kopier</button>' + kartlenke + "</div>" +
+                "</div>" +
+                '<div class="chips">' +
+                    '<span class="chip bla">' + (v6 ? "IPv6" : "IPv4") + "</span>" +
+                    '<span class="chip ' + (type === "offentleg" ? "gron" : "rosa") + '">' + esc(typeNamn[type] || "") + "</span>" +
+                "</div>";
+
+        if (d.berreIp) {
+            html += '<p style="margin:0">Vi fann adressa di, men plasseringstenestene svarte ikkje akkurat no. Prøv igjen om litt for å sjå land og by.</p>';
+        } else {
+            html +=
+                '<div class="rutenett">' +
+                    celle("🌍 Land", flagg(d.landkode) + tekst(d.land)) +
+                    celle("🏙️ By", tekst(d.by)) +
+                    celle("🗺️ Region", tekst(d.region)) +
+                    celle("📡 Internettleverandør", tekst(d.isp)) +
+                    celle("🕒 Tidssone", tekst(d.tidssone)) +
+                    celle("📌 Koordinatar", koordTekst) +
+                "</div>" +
+                '<p class="smaatekst" style="margin-left:0">Plasseringa er eit grovt anslag, ofte berre byen der internettleverandøren har utstyret sitt. Ho viser ikkje heimeadressa di.</p>';
+        }
+        html += "</div>";
+        boks.innerHTML = html;
+        boks.className = "resultat vis";
     }
 
-    $("sokSkjema").addEventListener("submit", function (e) {
-        e.preventDefault();
-        sok($("ipInn").value);
-    });
+    function celle(etikett, verdi) {
+        return '<div class="celle"><div class="etikett">' + esc(etikett) + '</div><div class="verdi">' + esc(verdi) + "</div></div>";
+    }
 
-    Array.prototype.forEach.call(document.querySelectorAll(".eksempel button"), function (b) {
-        b.addEventListener("click", function () {
-            $("ipInn").value = b.getAttribute("data-ip");
-            sok(b.getAttribute("data-ip"));
-        });
-    });
-
-    /* ---------- Kopier ---------- */
-    $("kopier").addEventListener("click", function () {
-        var knapp = $("kopier");
-        var ip = $("dIp").textContent;
+    /* Kopier-knappar (delegert) */
+    document.addEventListener("click", function (e) {
+        var k = e.target.closest ? e.target.closest("[data-kopier]") : null;
+        if (!k) { return; }
+        var ip = k.getAttribute("data-kopier");
         function ferdig(ok) {
-            knapp.textContent = ok ? "✅ Kopiert!" : "Kunne ikkje kopiere";
-            setTimeout(function () { knapp.textContent = "📋 Kopier"; }, 1800);
+            k.textContent = ok ? "✅ Kopiert!" : "Kunne ikkje kopiere";
+            setTimeout(function () { k.textContent = "📋 Kopier"; }, 1800);
         }
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(ip).then(function () { ferdig(true); }, function () { ferdig(false); });
-        } else {
-            ferdig(false);
-        }
+        } else { ferdig(false); }
     });
+
+    /* =====================================================
+       HOVUDKNAPP: VIS MIN IP
+       ===================================================== */
+    var minOpptatt = false;
+    $("visMin").addEventListener("click", function () {
+        if (minOpptatt) { return; }
+        minOpptatt = true;
+        var b = $("visMin");
+        var opphavleg = b.innerHTML;
+        b.disabled = true;
+        b.classList.add("laster");
+        b.innerHTML = '<span class="spinnar" aria-hidden="true"></span> Hentar …';
+        visStatus($("minStatus"), "laster", "⏳ Spør internett om adressa di …");
+        slaaOppMin().then(function (d) {
+            skjulStatus($("minStatus"));
+            byggResultat($("minResultat"), d, "Di offentlege IP-adresse");
+        }).catch(function (e) {
+            visStatus($("minStatus"), "feil", "⚠️ " + feilmelding(e));
+        }).then(function () {
+            minOpptatt = false;
+            b.disabled = false;
+            b.classList.remove("laster");
+            b.innerHTML = opphavleg;
+        });
+    });
+
+    /* =====================================================
+       IP-SØK
+       ===================================================== */
+    var sokOpptatt = false;
+    function sok(raatt) {
+        if (sokOpptatt) { return; }
+        var ip = raatt.trim();
+        var st = $("sokStatus"), res = $("sokResultat");
+        res.className = "resultat";
+        if (!ip) { visStatus(st, "info", "Skriv inn ei IP-adresse først, til dømes 8.8.8.8."); return; }
+        if (!erIPv4(ip) && !erIPv6(ip)) {
+            visStatus(st, "feil", "«" + ip + "» er ikkje ei gyldig IP-adresse. Bruk IP-sjekkaren ved sida av for å finne ut kva som er feil!");
+            return;
+        }
+        var type = klassifiser(ip);
+        if (type !== "offentleg") { visStatus(st, "info", "ℹ️ " + typeForklaring[type]); return; }
+
+        sokOpptatt = true;
+        var k = $("sokKnapp");
+        k.disabled = true;
+        visStatus(st, "laster", "⏳ Søkjer etter " + ip + " …");
+        slaaOpp(ip).then(function (d) {
+            if (!d.ip) { d.ip = ip; }
+            skjulStatus(st);
+            byggResultat(res, d, "Resultat for søket ditt");
+        }).catch(function (e) {
+            visStatus(st, "feil", "⚠️ " + feilmelding(e));
+        }).then(function () {
+            sokOpptatt = false;
+            k.disabled = false;
+        });
+    }
+    $("sokSkjema").addEventListener("submit", function (e) { e.preventDefault(); sok($("sokInn").value); });
+    alle("[data-sok]").forEach(function (b) {
+        b.addEventListener("click", function () {
+            $("sokInn").value = b.getAttribute("data-sok");
+            sok(b.getAttribute("data-sok"));
+        });
+    });
+
+    /* =====================================================
+       IP-SJEKKAR (VALIDATOR)
+       ===================================================== */
+    function sjekkIPv4(s) {
+        var delar = s.split(".");
+        var grunnar = [];
+        var visDelar = delar.map(function (x, i) {
+            var nr = i + 1;
+            if (x === "") { grunnar.push("Tal nr. " + nr + " manglar. Det står to punktum etter kvarandre, eller eit punktum i starten eller slutten."); return { t: "tomt", feil: true, tom: true }; }
+            if (!/^\d+$/.test(x)) { grunnar.push("«" + x + "» er ikkje eit tal. Berre sifra 0–9 er lov i ei IPv4-adresse."); return { t: x, feil: true }; }
+            if (Number(x) > 255) { grunnar.push(x + " er for stort. Kvart tal må vere mellom 0 og 255, fordi det berre er plass til 8 bit (256 ulike verdiar)."); return { t: x, feil: true }; }
+            if (x.length > 1 && x.charAt(0) === "0") { grunnar.push("«" + x + "» har null framfor. Skriv " + Number(x) + " i staden, elles kan nokre program tru det er eit anna tal."); return { t: x, feil: true }; }
+            return { t: x, feil: false };
+        });
+        if (delar.length !== 4) {
+            grunnar.unshift("Ei IPv4-adresse må ha nøyaktig 4 tal med 3 punktum mellom. Du har " + delar.length + (delar.length === 1 ? " tal." : " tal."));
+        }
+        return { ok: grunnar.length === 0, delar: visDelar, grunnar: grunnar };
+    }
+
+    function visValidering(raatt) {
+        var s = raatt.trim();
+        var svar = $("valSvar"), inn = $("valInn");
+        inn.classList.remove("gyldig", "ugyldig");
+        if (!s) {
+            svar.className = "val-svar";
+            svar.innerHTML = '<div class="val-tittel">🤔 Skriv ei adresse</div><p style="margin:0">Huskeregel: ei IPv4-adresse har <strong>fire tal</strong> skilde med <strong>punktum</strong>, og kvart tal må vere mellom <strong>0 og 255</strong>.</p>';
+            return;
+        }
+
+        /* IPv6 */
+        if (s.indexOf(":") !== -1) {
+            if (erIPv6(s)) {
+                inn.classList.add("gyldig");
+                svar.className = "val-svar ok";
+                svar.innerHTML = '<div class="val-tittel">✅ Gyldig IPv6-adresse!</div>' +
+                    "<p style=\"margin:0\">Type: <strong>" + esc(typeNamn[klassifiser(s)]) + "</strong>. IPv6 bruker grupper med tal og bokstavane a–f, skilde med kolon.</p>";
+            } else {
+                inn.classList.add("ugyldig");
+                var g6 = [];
+                if (/[^0-9a-f:.]/i.test(s)) { g6.push("IPv6 kan berre innehalde sifra 0–9, bokstavane a–f og kolon. Bokstavar som g, h eller z er ikkje lov."); }
+                if ((s.match(/::/g) || []).length > 1) { g6.push("Forkortinga :: kan berre brukast éin gong i ei adresse."); }
+                if (s.split(":").some(function (x) { return x.length > 4 && x.indexOf(".") === -1; })) { g6.push("Kvar gruppe kan ha maks 4 teikn."); }
+                if (!g6.length) { g6.push("Ei IPv6-adresse må ha 8 grupper, eller færre om du forkortar med ::."); }
+                svar.className = "val-svar feil";
+                svar.innerHTML = '<div class="val-tittel">❌ Ikkje gyldig IPv6</div><ul>' + g6.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>";
+            }
+            return;
+        }
+
+        /* IPv4 */
+        var r = sjekkIPv4(s);
+        var delHtml = '<div class="delar" aria-hidden="true">' + r.delar.map(function (d, i) {
+            return (i ? '<span class="prikk">.</span>' : "") + '<span class="del' + (d.feil ? " feil" : "") + (d.tom ? " tom" : "") + '">' + esc(d.t) + "</span>";
+        }).join("") + "</div>";
+
+        if (r.ok) {
+            inn.classList.add("gyldig");
+            var type = klassifiser(s);
+            var binar = s.split(".").map(function (x) { return ("00000000" + Number(x).toString(2)).slice(-8); }).join(".");
+            svar.className = "val-svar ok";
+            svar.innerHTML = '<div class="val-tittel">✅ Gyldig IPv4-adresse!</div>' + delHtml +
+                "<p style=\"margin:6px 0 0\">Fire tal, alle mellom 0 og 255. Type: <strong>" + esc(typeNamn[type]) + "</strong></p>" +
+                '<div class="binar">Slik ser datamaskina henne: ' + esc(binar) + "</div>";
+        } else {
+            inn.classList.add("ugyldig");
+            svar.className = "val-svar feil";
+            svar.innerHTML = '<div class="val-tittel">❌ Ikkje gyldig</div>' + delHtml +
+                "<ul>" + r.grunnar.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>";
+        }
+    }
+    $("valInn").addEventListener("input", function () { visValidering(this.value); });
+    $("valSkjema").addEventListener("submit", function (e) { e.preventDefault(); visValidering($("valInn").value); });
+    alle("[data-val]").forEach(function (b) {
+        b.addEventListener("click", function () {
+            $("valInn").value = b.getAttribute("data-val");
+            visValidering(b.getAttribute("data-val"));
+        });
+    });
+
+    /* =====================================================
+       FANER
+       ===================================================== */
+    var faner = alle('[role="tab"]');
+    function velFane(fane, fokus) {
+        faner.forEach(function (f) {
+            var valt = f === fane;
+            f.setAttribute("aria-selected", valt ? "true" : "false");
+            f.tabIndex = valt ? 0 : -1;
+            var p = $(f.getAttribute("aria-controls"));
+            p.hidden = !valt;
+            p.classList.toggle("vis", valt);
+        });
+        if (fokus) { fane.focus(); }
+        if (fane.id === "fane-v4v6") { animerSoyler(); }
+    }
+    faner.forEach(function (f, i) {
+        f.addEventListener("click", function () { velFane(f, false); });
+        f.addEventListener("keydown", function (e) {
+            var n = null;
+            if (e.key === "ArrowRight") { n = faner[(i + 1) % faner.length]; }
+            if (e.key === "ArrowLeft") { n = faner[(i - 1 + faner.length) % faner.length]; }
+            if (e.key === "Home") { n = faner[0]; }
+            if (e.key === "End") { n = faner[faner.length - 1]; }
+            if (n) { e.preventDefault(); velFane(n, true); }
+        });
+    });
+
+    function animerSoyler() {
+        alle("#soyler .soyle").forEach(function (s) {
+            s.style.width = "0";
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () { s.style.width = s.getAttribute("data-w") + "%"; });
+            });
+        });
+    }
+
+    /* Pakke-animasjon */
+    var flytTekstar = [
+        "1. Du skriv nrk.no. Mobilen lagar ein pakke med si eiga adresse som avsendar.",
+        "2. Ruteren (postkontoret heime) byter til den offentlege adressa og sender pakken ut.",
+        "3. DNS slår opp nrk.no i «telefonkatalogen» og finn IP-adressa til serveren.",
+        "4. Pakken hoppar mellom mange ruterar på internett, akkurat som brev mellom postkontor.",
+        "5. Serveren til NRK får pakken og sender nettsida tilbake til di adresse. 🎉"
+    ];
+    var flytTimer = null;
+    $("flytKnapp").addEventListener("click", function () {
+        var stopp = alle("#flyt .stopp");
+        var steg = 0;
+        clearInterval(flytTimer);
+        function vis() {
+            stopp.forEach(function (s, i) { s.classList.toggle("aktiv", i === steg); });
+            $("flytTekst").textContent = flytTekstar[steg];
+        }
+        vis();
+        flytTimer = setInterval(function () {
+            steg++;
+            if (steg >= stopp.length) { clearInterval(flytTimer); return; }
+            vis();
+        }, 1700);
+    });
+
+    /* =====================================================
+       FAKTAKORT
+       ===================================================== */
+    alle(".faktakort").forEach(function (k) {
+        k.addEventListener("click", function () {
+            var snudd = k.classList.toggle("snudd");
+            k.setAttribute("aria-pressed", snudd ? "true" : "false");
+        });
+    });
+
+    /* =====================================================
+       QUIZ
+       ===================================================== */
+    var sporsmal = [
+        {
+            q: "Kva kan ei IP-adresse best samanliknast med?",
+            a: ["Eit passord", "Ei postadresse", "Ei e-postadresse", "Eit brukarnamn"],
+            rett: 1,
+            forklar: "Akkurat som ei postadresse fortel posten kvar brevet skal, fortel IP-adressa internett kvar datapakkane skal."
+        },
+        {
+            q: "Kva for ei av desse er ei gyldig IPv4-adresse?",
+            a: ["192.168.1.300", "10.0.0", "172.16.5.20", "8.8.8.8.8"],
+            rett: 2,
+            forklar: "172.16.5.20 har fire tal, og alle er mellom 0 og 255. 300 er for stort, 10.0.0 har berre tre tal, og 8.8.8.8.8 har fem."
+        },
+        {
+            q: "Kvifor laga ein IPv6?",
+            a: ["Fordi IPv4 var for treg", "Fordi IPv4-adressene tek slutt", "For å gjere internett gratis", "For å stoppe virus"],
+            rett: 1,
+            forklar: "Det finst berre om lag 4,3 milliardar IPv4-adresser, færre enn det er menneske på jorda. IPv6 har nesten uendeleg mange."
+        },
+        {
+            q: "Kva for ei av desse adressene er privat?",
+            a: ["8.8.8.8", "1.1.1.1", "192.168.0.10", "151.101.1.1"],
+            rett: 2,
+            forklar: "Adresser som startar med 192.168 er private og blir berre brukte inne på lokale nettverk, til dømes heime."
+        },
+        {
+            q: "Kva skjer når du slår på ein VPN?",
+            a: ["Du blir heilt trygg mot virus", "Nettsider ser IP-adressa til VPN-serveren i staden for di", "Internett blir alltid raskare", "Du får ingen IP-adresse i det heile"],
+            rett: 1,
+            forklar: "VPN sender trafikken gjennom ein annan server, så nettsider ser den adressa. Men VPN stoppar ikkje virus eller svindel!"
+        }
+    ];
+
+    var q = { nr: 0, valt: null, stadfesta: false, poeng: 0, svar: [] };
+    var bokstavar = ["A", "B", "C", "D"];
+
+    function teiknQuiz() {
+        var kort = $("quizKort");
+        var s = sporsmal[q.nr];
+        var siste = q.nr === sporsmal.length - 1;
+        var html =
+            '<div class="quiz-topp"><span>Spørsmål ' + (q.nr + 1) + " av " + sporsmal.length + "</span><span>⭐ " + q.poeng + " poeng</span></div>" +
+            '<div class="framdrift" role="progressbar" aria-valuemin="0" aria-valuemax="' + sporsmal.length + '" aria-valuenow="' + q.nr + '"><div style="width:' + (q.nr / sporsmal.length * 100) + '%"></div></div>' +
+            '<p class="sporsmal" id="qTekst">' + esc(s.q) + "</p>" +
+            '<div class="alternativ" role="radiogroup" aria-labelledby="qTekst">';
+        s.a.forEach(function (alt, i) {
+            var klasse = "alt";
+            var merknad = "";
+            if (q.stadfesta) {
+                if (i === s.rett) { klasse += " rett"; merknad = "✅"; }
+                else if (i === q.valt) { klasse += " gale"; merknad = "❌"; }
+            }
+            html += '<button type="button" class="' + klasse + '" role="radio" aria-checked="' + (q.valt === i ? "true" : "false") + '" data-i="' + i + '"' +
+                (q.stadfesta ? " disabled" : "") + (q.valt === i || (q.valt === null && i === 0) ? ' tabindex="0"' : ' tabindex="-1"') + ">" +
+                '<span class="bokstav">' + bokstavar[i] + "</span><span>" + esc(alt) + "</span>" +
+                (merknad ? '<span class="merknad" aria-hidden="true">' + merknad + "</span>" : "") + "</button>";
+        });
+        html += "</div>";
+
+        if (!q.stadfesta) {
+            html += '<p class="quiz-hint">' + (q.valt === null ? "👆 Vel eit svar." : "Du kan framleis byte svar. Trykk «Bekreft svar» når du er sikker.") + "</p>";
+        }
+
+        if (q.stadfesta) {
+            var rett = q.valt === s.rett;
+            html += '<div class="tilbakemelding vis ' + (rett ? "ok" : "feil") + '" role="status">' +
+                (rett ? "🎉 <strong>Rett!</strong> " : "😅 <strong>Ikkje heilt.</strong> Rett svar er <strong>" + esc(s.a[s.rett]) + "</strong>. ") +
+                esc(s.forklar) + "</div>";
+        }
+
+        html += '<div class="quiz-knappar">';
+        if (!q.stadfesta) {
+            html += '<button type="button" class="knapp" id="qBekreft"' + (q.valt === null ? " disabled" : "") + ">✔️ Bekreft svar</button>";
+        } else {
+            html += '<button type="button" class="knapp" id="qNeste">' + (siste ? "🏁 Sjå resultatet" : "Neste spørsmål ➜") + "</button>";
+        }
+        html += "</div>";
+        kort.innerHTML = html;
+
+        alle("#quizKort .alt").forEach(function (b) {
+            b.addEventListener("click", function () {
+                if (q.stadfesta) { return; }
+                q.valt = Number(b.getAttribute("data-i"));
+                teiknQuiz();
+                var ny = document.querySelector('#quizKort .alt[data-i="' + q.valt + '"]');
+                if (ny) { ny.focus(); }
+            });
+            b.addEventListener("keydown", function (e) {
+                if (q.stadfesta) { return; }
+                var i = Number(b.getAttribute("data-i")), n = null;
+                if (e.key === "ArrowDown" || e.key === "ArrowRight") { n = (i + 1) % s.a.length; }
+                if (e.key === "ArrowUp" || e.key === "ArrowLeft") { n = (i - 1 + s.a.length) % s.a.length; }
+                if (n !== null) {
+                    e.preventDefault();
+                    q.valt = n;
+                    teiknQuiz();
+                    document.querySelector('#quizKort .alt[data-i="' + n + '"]').focus();
+                }
+            });
+        });
+        var bek = $("qBekreft");
+        if (bek) {
+            bek.addEventListener("click", function () {
+                if (q.valt === null) { return; }
+                q.stadfesta = true;
+                var rett = q.valt === s.rett;
+                if (rett) { q.poeng++; }
+                q.svar.push({ q: s.q, rett: rett, fasit: s.a[s.rett] });
+                teiknQuiz();
+                $("qNeste").focus();
+            });
+        }
+        var neste = $("qNeste");
+        if (neste) {
+            neste.addEventListener("click", function () {
+                if (siste) { visQuizResultat(); return; }
+                q.nr++;
+                q.valt = null;
+                q.stadfesta = false;
+                teiknQuiz();
+                var forste = document.querySelector("#quizKort .alt");
+                if (forste) { forste.focus(); }
+            });
+        }
+    }
+
+    function visQuizResultat() {
+        var n = sporsmal.length, p = q.poeng;
+        var mld, emoji;
+        if (p === n) { emoji = "🏆"; mld = "Heilt perfekt! Du er ein ekte IP-ekspert. Kanskje IT er noko for deg?"; }
+        else if (p >= n - 1) { emoji = "🌟"; mld = "Kjempebra! Du har skjønt det meste om IP-adresser."; }
+        else if (p >= Math.ceil(n / 2)) { emoji = "👍"; mld = "Godt jobba! Ta ein titt på fanene over og prøv igjen for full pott."; }
+        else { emoji = "💪"; mld = "Godt forsøk! Les gjennom forklaringane over, så går det garantert betre neste gong."; }
+
+        var stjerner = "";
+        for (var i = 0; i < n; i++) { stjerner += i < p ? "⭐" : "☆"; }
+
+        $("quizKort").innerHTML =
+            '<div class="resultatskjerm" role="status">' +
+                '<div class="stor" aria-hidden="true">' + emoji + "</div>" +
+                "<h3>Ferdig!</h3>" +
+                '<div class="poeng">' + p + " / " + n + "</div>" +
+                '<div class="stjerner" aria-label="' + p + " av " + n + ' stjerner">' + stjerner + "</div>" +
+                "<p>" + esc(mld) + "</p>" +
+                '<ul class="oppsummering">' + q.svar.map(function (s) {
+                    return "<li>" + (s.rett ? "✅ " : "❌ ") + esc(s.q) + (s.rett ? "" : " <br><small>Rett svar: <strong>" + esc(s.fasit) + "</strong></small>") + "</li>";
+                }).join("") + "</ul>" +
+                '<div class="quiz-knappar" style="justify-content:center"><button type="button" class="knapp raud" id="qIgjen">🔁 Prøv igjen</button></div>' +
+            "</div>";
+        $("qIgjen").addEventListener("click", function () {
+            q = { nr: 0, valt: null, stadfesta: false, poeng: 0, svar: [] };
+            teiknQuiz();
+            $("quiz").scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        if (p >= n - 1) { konfetti(); }
+    }
+
+    function konfetti() {
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { return; }
+        var fargar = ["#2563eb", "#7c3aed", "#db2777", "#ea580c", "#f59e0b", "#10b981"];
+        for (var i = 0; i < 90; i++) {
+            var c = document.createElement("span");
+            c.className = "konfetti";
+            c.style.left = Math.random() * 100 + "vw";
+            c.style.background = fargar[i % fargar.length];
+            c.style.animationDuration = (2.2 + Math.random() * 2) + "s";
+            c.style.animationDelay = (Math.random() * 0.6) + "s";
+            document.body.appendChild(c);
+            (function (el) { setTimeout(function () { el.remove(); }, 5200); })(c);
+        }
+    }
+
+    teiknQuiz();
 })();
 </script>
 </body>
