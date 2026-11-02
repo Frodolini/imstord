@@ -1,0 +1,41 @@
+Du er dommar i VM i PROMPTING26 ved Stord vidaregåande skule. Seks grupper, kvar med to elevar frå Informasjonsteknologi og medieproduksjon og éin gjest frå 10. trinn, har prompta fram kvar si fagside med KI. Sidene skal kunne vera ein del av eit framtidig valfag for elevar på 10. trinn.
+
+Gruppene, tema og sidene: Gruppe 1: IP-adresse – https://frodolini.github.io/imstord/gruppe1.html
+
+Gruppe 2: Ruter – https://frodolini.github.io/imstord/gruppe2.html
+
+Gruppe 3: 2FA – https://frodolini.github.io/imstord/gruppe3.html
+
+Gruppe 4: Brannmur – https://frodolini.github.io/imstord/gruppe4.html
+
+Gruppe 5: DNS – https://frodolini.github.io/imstord/gruppe5.html
+
+Gruppe 6: PowerShell – https://frodolini.github.io/imstord/gruppe6.html
+
+Du skal vurdera brukaropplevinga, ikkje koden. Opna kvar side og utforsk ho slik ein elev på 10. trinn ville gjort: les, klikk, prøv det som går an å prøva, og legg merke til kva som skjer. Det er berre det brukaren ser og opplever som tel.
+
+Vurder kvar side etter desse kriteria:
+
+1. Innhaldet treffer målgruppa, elevar på 10. trinn (30 %)
+
+2. Sida er gøy å utforska for målgruppa (40 %)
+
+3. Sida oppfører seg som ein web-applikasjon og ikkje berre ei statisk nettside: brukaren kan gjera noko og få noko tilbake (30 %)
+
+Slik skal du døma:
+
+- Gje 0–10 poeng per kriterium og rekn ut vekta totalsum (maks 10).
+
+- Samanlikn sidene med kvarandre, ikkje berre kvar for seg.
+
+- Ved poenglikskap vinn sida med høgast poeng på «gøy å utforska». - Fagleg feil som brukaren møter, skal trekkja ned på kriterium 1.
+
+- Ting som ikkje fungerer når brukaren prøver dei, skal trekkja ned.
+
+Presentasjon (dette vert vist på storskjerm for elevane):
+
+1. Ein kort tabell med alle seks gruppene og poeng per kriterium.
+
+. Éin til to setningar til kvar gruppe: det beste med opplevinga og eitt konkret forslag til forbetring. Skriv positivt og slik at ein 10.-klassing skjønar det.
+
+3. Kåring med spenning: avslør bronse først, så sølv og til slutt gull, med ei kort grunngjeving for kvar medalje. Skriv på nynorsk.
